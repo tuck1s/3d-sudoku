@@ -1,5 +1,5 @@
 # Import the Cube class and the cubes list from the cubes_definition file
-from define_cube import cubes, Cube
+from define_cube import Cube, CubeCollection
 
 def is_interchangeable(a, b):
     # Treat 6 and 9 as interchangeable, and 0 as a wildcard (blank face)
@@ -34,7 +34,8 @@ def is_valid(board, cube, x, y, z):
             return False
     return True
 
-def solve_sudoku_3d(board, cubes, used, idx):
+
+def solve_sudoku_3d(board, cubes:CubeCollection, used, idx):
     if idx == len(cubes):
         print("All cubes placed successfully.")
         return True  # All cubes placed
@@ -44,9 +45,9 @@ def solve_sudoku_3d(board, cubes, used, idx):
             for z in range(3):
                 if board[x][y][z].faces == [0]*6:  # Check for empty cube
                     print(f"Empty spot found at ({x}, {y}, {z})")
-                    combinations = cubes[idx].rotate()
-                    for orientation in combinations:
-                        cube_with_orientation = Cube(orientation, index=cubes[idx].index)
+                    combinations = cubes.get(idx).rotate()
+                    # print(f'Cube with {cubes[idx].nonblanks()} marked faces has combinations={len(combinations)}')
+                    for cube_with_orientation in combinations:
                         if is_valid(board, cube_with_orientation, x, y, z):
                             board[x][y][z] = cube_with_orientation
                             used[idx] = True
@@ -67,7 +68,7 @@ def print_board(board):
         print(f"Layer {z}:")
         for y in range(3):
             # Create a list of string representations for each cube in the row
-            row = [f"{board[x][y][z].index if board[x][y][z].index is not None else 'N/A'}: {board[x][y][z]}" for x in range(3)]
+            row = [f"{board[x][y][z]}" for x in range(3)]
             print(' | '.join(row))
         print()
 
@@ -75,7 +76,36 @@ def print_board(board):
 # Create an empty 3x3x3 board, where each cell starts with a default cube (empty)
 empty_cube = Cube([0]*6)  # Create an empty cube with all faces as zero
 board = [[[empty_cube for _ in range(3)] for _ in range(3)] for _ in range(3)]
-
+cubes = CubeCollection([
+    # order top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
+    [1, 0, 3, 0, 1, 0],  # Specific problem to solve
+    [7, 0, 0, 5, 0, 0],
+    [4, 0, 0, 5, 0, 0],
+    [4, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [4, 0, 2, 0, 2, 0],
+    [3, 0, 0, 0, 0, 0],
+    [7, 0, 0, 0, 0, 0],
+    [4, 0, 0, 0, 0, 8],
+    [5, 0, 0, 9, 0, 0],
+    [7, 0, 0, 3, 5, 0],
+    [9, 0, 2, 0, 0, 1],
+    [3, 0, 0, 0, 2, 0],
+    [5, 0, 6, 0, 0, 8],
+    [8, 0, 0, 1, 0, 8],
+    [1, 0, 0, 0, 9, 0],
+    [6, 0, 0, 5, 0, 0],
+    [7, 0, 0, 0, 0, 6],
+    [3, 0, 0, 0, 9, 0],
+    [8, 0, 0, 0, 0, 0],
+    [9, 0, 0, 0, 0, 0],
+    [3, 0, 1, 0, 6, 0],
+    [7, 0, 0, 4, 0, 0],
+    [7, 0, 0, 0, 9, 0],
+    [4, 0, 0, 0, 0, 6],
+    [2, 0, 0, 6, 2, 0],
+    [8, 0, 0, 0, 0, 0],
+])
 used = [False] * len(cubes)
 
 # Try solving the puzzle
