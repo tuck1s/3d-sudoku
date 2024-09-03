@@ -21,11 +21,7 @@ def is_valid(sides:list, cube:Cube, x:int, y:int, z:int, size:int) -> bool:
     # Iterate over all sides
     for side in Sides:
         if checks[side]:  # Check if the current side is on the border of the cube
-            if cube[side] == 0:  # No blank face allowed
-                # print(f"Not placing a blank {cube[side]} on the {side.name} face")
-                return False
-            if cube[side] in sides[side.value]:  # No repeating number on the same face
-                # print(f"Already got a {cube[side]} on the {side.name} face")
+            if cube[side] == 0 or (cube[side] in sides[side.value]):  # No repeating number on the same face
                 return False
     return True
 
@@ -34,28 +30,23 @@ def update_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z: int, size
     for side in Sides:
         if checks[side]:
             sides[side.value].add(cube[side])
-            # print(f"Added {cube[side]} to {side.name} set")
 
 def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z: int, size: int):
     checks = generate_checks(x, y, z, size)
-
     for side in Sides:
         if checks[side]:
             sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
-            # print(f"Removed {cube[side]} from {side.name} set")
+
 
 def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int) -> bool:
-    global max_used, iters
-
+    global iters, solutions
     size = len(board)
-    if idx == size **3:
-        print("All cubes placed successfully.")
+    if idx == size * size * size:
+        solutions += 1
+        print(f'Solution #{solutions}')
+        print_board(board)
         return True  # All cubes placed
-    if idx > max_used:
-        max_used = idx
-        print(f'Used {max_used}')
-        if max_used >= 24:
-            print_board(board)
+
     # Iterate over all positions
     for x in range(size):
         for y in range(size):
@@ -63,12 +54,13 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                 if board[x][y][z] is None:  # Check for empty spot
                     # Try each cube
                     for cube_idx, cube in enumerate(cubes):
-                        iters +=1
-                        if iters % 10000 == 0:
-                            print('.', end='')
                         if used[cube_idx] or (cube.doppelganger and used[cube.doppelganger]):
                             continue  # Skip used cubes
-
+                        # progress marker
+                        iters +=1
+                        if iters > 100000:
+                            print('.', end='', flush=True)
+                            iters = 0
                         # Try all orientations of the current cube
                         for cube_with_orientation in cube.rotate():
                             if is_valid(sides, cube_with_orientation, x, y, z, size):
@@ -78,7 +70,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 if cube_with_orientation.doppelganger:
                                     used[cube_with_orientation.doppelganger] = True
                                 if solve_sudoku_3d(board, sides, cubes, used, idx + 1):
-                                    return True
+                                    pass # look for more solutions
 
                                 # Backtrack
                                 board[x][y][z] = None
@@ -87,8 +79,6 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 if cube_with_orientation.doppelganger:
                                     used[cube_with_orientation.doppelganger] = False
                     return False
-
-    print(f"No solution found with current configuration, idx: {idx}")
     return False
 
 
@@ -145,43 +135,39 @@ cubes = CubeCollection([
     [8, 0, 0, 0, 0, 0],
     [9, 0, 0, 0, 0, 0],
 
-    # three marked
-    [1, 0, 3, 0, 1, 0],
-    [7, 0, 0, 3, 5, 0],
-    [4, 0, 2, 0, 2, 0],
-    [9, 0, 2, 0, 0, 1],
-    [5, 0, 6, 0, 0, 8],
-    [8, 0, 0, 1, 0, 8],
-    [3, 0, 1, 0, 6, 0],
-    [2, 0, 0, 6, 2, 0],
-
     # two marked
-    [1, 0, 0, 0, 9, 0],
-    [3, 0, 0, 0, 2, 0],
-    [7, 0, 0, 5, 0, 0],
-    [4, 0, 0, 5, 0, 0],
-    [4, 0, 0, 0, 0, 8],
-    [5, 0, 0, 9, 0, 0],
-    [6, 0, 0, 5, 0, 0],
-    [7, 0, 0, 0, 0, 6],
-    [3, 0, 0, 0, 9, 0],
-    [7, 0, 0, 4, 0, 0],
-    [7, 0, 0, 0, 9, 0],
-    [4, 0, 0, 0, 0, 7], # adjusted
+    [1, 0, 0, 0, 9, 0], #7
+    [3, 0, 0, 0, 2, 0], #8
+    [7, 0, 0, 5, 0, 0], #9
+    [4, 0, 0, 5, 0, 0], #A
+    [4, 0, 0, 0, 0, 8], #B
+    [5, 0, 0, 9, 0, 0], #C
+    [6, 0, 0, 5, 0, 0], #D
+    [7, 0, 0, 0, 0, 6], #E
+    [3, 0, 0, 0, 9, 0], #F
+    [7, 0, 0, 4, 0, 0], #G
+    [7, 0, 0, 0, 9, 0], #H
+    [4, 0, 0, 0, 0, 6], #I
+
+    # three marked
+    [1, 0, 3, 0, 1, 0], #J
+    [7, 0, 0, 3, 5, 0], #K
+    [4, 0, 2, 0, 2, 0], #L
+    [9, 0, 2, 0, 0, 1], #M
+    [5, 0, 6, 0, 0, 8], #N
+    [8, 0, 0, 1, 0, 8], #O
+    [3, 0, 1, 0, 6, 0], #P
+    [2, 0, 0, 6, 2, 0], #Q
 ])
 assert len(cubes) == CUBE_LEN **3
 # expand the list to allow for fuzzy matching of 6s and 9s, treat them as having MORE cubes to choose from
 expand_fuzzy69(cubes)
 # cubes = CubeCollection(sorted(cubes, key=lambda x: x.nonblanks(), reverse=True))
 print(cubes)
+# cubes.permutations()
 
 used = [False] * len(cubes)
-max_used = 0
 iters=0
+solutions = 0
 # Try solving the puzzle
-if solve_sudoku_3d(board, sides, cubes, used, 0):
-    print("Sudoku Solved!")
-    print_board(board)
-
-else:
-    print("No solution exists.")
+solve_sudoku_3d(board, sides, cubes, used, 0)

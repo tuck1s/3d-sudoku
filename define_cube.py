@@ -90,3 +90,9 @@ class CubeCollection:
 
     def extend(self, cubes:list):
         self.cubes.extend(cubes)
+
+    def permutations(self):
+        n = 1
+        for c in self.cubes:
+            n *= len(c.rotate())
+        return n
