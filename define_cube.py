@@ -15,6 +15,7 @@ class Cube:
         self.faces = faces  # A list with six numbers, 0 if face is blank
         self.index = index  # Optional index for identification
         self.rotate_cache = None
+        self.doppelganger = None # mark if this is a 6 / 9 doppelganger
         return
 
     def __getitem__(self, side: Sides):
@@ -65,7 +66,8 @@ class Cube:
 
     def __str__(self):
         faces_str = ' '.join(str(face) if face >0 else '-' for face in self.faces)
-        return f"{self.index:2} Faces: {faces_str}"
+        doppel = f'doppelganger={self.doppelganger}' if self.doppelganger else ''
+        return f'{self.index:2} Faces: {faces_str} {doppel}'
 
 class CubeCollection:
     def __init__(self, faces:list):
@@ -81,6 +83,10 @@ class CubeCollection:
 
     def __iter__(self):
         return iter(self.cubes)
+
+    def __str__(self):
+        coll_str = '\n'.join(str(cube) for cube in self.cubes)
+        return coll_str
 
     def extend(self, cubes:list):
         self.cubes.extend(cubes)

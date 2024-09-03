@@ -66,7 +66,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                         iters +=1
                         if iters % 10000 == 0:
                             print('.', end='')
-                        if used[cube_idx]:
+                        if used[cube_idx] or (cube.doppelganger and used[cube.doppelganger]):
                             continue  # Skip used cubes
 
                         # Try all orientations of the current cube
@@ -75,6 +75,8 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 board[x][y][z] = cube_with_orientation
                                 update_sides(sides, cube_with_orientation, x, y, z, size)
                                 used[cube_idx] = True
+                                if cube_with_orientation.doppelganger:
+                                    used[cube_with_orientation.doppelganger] = True
                                 if solve_sudoku_3d(board, sides, cubes, used, idx + 1):
                                     return True
 
@@ -82,7 +84,8 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 board[x][y][z] = None
                                 remove_cube_from_sides(sides, cube_with_orientation, x, y, z, size)
                                 used[cube_idx] = False
-                                pass
+                                if cube_with_orientation.doppelganger:
+                                    used[cube_with_orientation.doppelganger] = False
                     return False
 
     print(f"No solution found with current configuration, idx: {idx}")
@@ -99,21 +102,26 @@ def print_board(board):
         print()
 
 
-def expand_fuzzy69(c: CubeCollection):
+# Need to mark which ones are considered doubles so we don't over-use them
+def expand_fuzzy69(cubeCollection: CubeCollection):
     fuzz = []
-    idx = c[-1].index + 1
-    for cube in c:
+    idx = cubeCollection[-1].index + 1 # mark them as distinct
+    for cube in cubeCollection:
         # Allow for possibility of a 6, a 9, or both on each cube
         if 6 in cube.faces:
             new_cube = Cube([9 if x == 6 else x for x in cube.faces], idx)
             idx += 1
+            cube.doppelganger = new_cube.index
+            new_cube.doppelganger = cube.index
             fuzz.append(new_cube)
         if 9 in cube.faces:
             new_cube = Cube([6 if x == 9 else x for x in cube.faces], idx)
             idx += 1
+            cube.doppelganger = new_cube.index
+            new_cube.doppelganger = cube.index
             fuzz.append(new_cube)
-    print(f'Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity')
-    c.extend(fuzz)
+    print(f'Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity, marking doppelgangers')
+    cubeCollection.extend(fuzz)
 
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
@@ -125,37 +133,47 @@ sides = [set() for _ in range(6)]
 # Specific problem to solve
 cubes = CubeCollection([
     # order top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
-    [1, 0, 3, 0, 1, 0],
-    [7, 0, 0, 5, 0, 0],
-    [4, 0, 0, 5, 0, 0],
-    [4, 0, 0, 0, 0, 0],
+
+    # blank
     [0, 0, 0, 0, 0, 0],
-    [4, 0, 2, 0, 2, 0],
+
+    # one marked
     [3, 0, 0, 0, 0, 0],
+    [4, 0, 0, 0, 0, 0],
     [7, 0, 0, 0, 0, 0],
-    [4, 0, 0, 0, 0, 8],
-    [5, 0, 0, 9, 0, 0],
+    [8, 0, 0, 0, 0, 0],
+    [8, 0, 0, 0, 0, 0],
+    [9, 0, 0, 0, 0, 0],
+
+    # three marked
+    [1, 0, 3, 0, 1, 0],
     [7, 0, 0, 3, 5, 0],
+    [4, 0, 2, 0, 2, 0],
     [9, 0, 2, 0, 0, 1],
-    [3, 0, 0, 0, 2, 0],
     [5, 0, 6, 0, 0, 8],
     [8, 0, 0, 1, 0, 8],
+    [3, 0, 1, 0, 6, 0],
+    [2, 0, 0, 6, 2, 0],
+
+    # two marked
     [1, 0, 0, 0, 9, 0],
+    [3, 0, 0, 0, 2, 0],
+    [7, 0, 0, 5, 0, 0],
+    [4, 0, 0, 5, 0, 0],
+    [4, 0, 0, 0, 0, 8],
+    [5, 0, 0, 9, 0, 0],
     [6, 0, 0, 5, 0, 0],
     [7, 0, 0, 0, 0, 6],
     [3, 0, 0, 0, 9, 0],
-    [8, 0, 0, 0, 0, 0],
-    [9, 0, 0, 0, 0, 0],
-    [3, 0, 1, 0, 6, 0],
     [7, 0, 0, 4, 0, 0],
     [7, 0, 0, 0, 9, 0],
-    [4, 0, 0, 0, 0, 6],
-    [2, 0, 0, 6, 2, 0],
-    [8, 0, 0, 0, 0, 0],
+    [4, 0, 0, 0, 0, 7], # adjusted
 ])
 assert len(cubes) == CUBE_LEN **3
 # expand the list to allow for fuzzy matching of 6s and 9s, treat them as having MORE cubes to choose from
 expand_fuzzy69(cubes)
+# cubes = CubeCollection(sorted(cubes, key=lambda x: x.nonblanks(), reverse=True))
+print(cubes)
 
 used = [False] * len(cubes)
 max_used = 0
