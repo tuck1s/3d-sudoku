@@ -2,10 +2,6 @@
 from define_cube import Cube, CubeCollection, Sides
 from typing import List, Set
 
-def is_interchangeable(a, b):
-    # Treat 6 and 9 as interchangeable, and 0 as a wildcard (blank face)
-    return (a == b) or (a == 6 and b == 9) or (a == 9 and b == 6) or a == 0 or b == 0
-
 # Define position checks for all six sides
 def generate_checks(x: int, y: int, z: int, size: int) -> dict:
     return {
@@ -27,7 +23,7 @@ def is_valid(sides:list, cube:Cube, x:int, y:int, z:int, size:int) -> bool:
                 # print(f"Not placing a blank {cube[side]} on the {side.name} face")
                 return False
             if cube[side] in sides[side.value]:  # No repeating number on the same face
-                print(f"Already got a {cube[side]} on the {side.name} face")
+                # print(f"Already got a {cube[side]} on the {side.name} face")
                 return False
     return True
 
@@ -46,32 +42,42 @@ def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z:
             sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
             # print(f"Removed {cube[side]} from {side.name} set")
 
-def solve_sudoku_3d(board:list, sides:List[Set[int]], cubes:CubeCollection, used, idx):
-    if idx == len(cubes):
+def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int) -> bool:
+    size = len(board)
+    if idx == size **3:
         print("All cubes placed successfully.")
         return True  # All cubes placed
-    size = len(board)
+
+    # Iterate over all positions
     for x in range(size):
         for y in range(size):
             for z in range(size):
-                if board[x][y][z] is None:  # Check for empty cube
-                    print(f"Empty spot found at ({x}, {y}, {z})")
-                    combinations = cubes.get(idx).rotate()
-                    # print(f'Cube with {cubes[idx].nonblanks()} marked faces has combinations={len(combinations)}')
-                    for cube_with_orientation in combinations:
-                        if is_valid(sides, cube_with_orientation, x, y, z, size):
-                            board[x][y][z] = cube_with_orientation
-                            update_sides(sides, cube_with_orientation, x, y, z, size)
-                            used[idx] = True
-                            print(f"Placing cube {idx} at ({x}, {y}, {z}) with orientation {cube_with_orientation.faces}")
-                            if solve_sudoku_3d(board, sides, cubes, used, idx+1):
-                                return True
-                            board[x][y][z] = None  # Backtrack
-                            remove_cube_from_sides(sides, cube_with_orientation, x, y, z, size)
-                            used[idx] = False
-                            print(f"Backtracking from ({x}, {y}, {z})")
-                    print(f"No valid placement for cube {idx} at ({x}, {y}, {z}) with all orientations, backtracking...")
+                if board[x][y][z] is None:  # Check for empty spot
+                    # print(f"Empty spot found at ({x}, {y}, {z})")
+
+                    # Try each cube
+                    for cube_idx, cube in enumerate(cubes):
+                        if used[cube_idx]:
+                            continue  # Skip used cubes
+
+                        # Try all orientations of the current cube
+                        for cube_with_orientation in cube.rotate():
+                            if is_valid(sides, cube_with_orientation, x, y, z, size):
+                                board[x][y][z] = cube_with_orientation
+                                update_sides(sides, cube_with_orientation, x, y, z, size)
+                                used[cube_idx] = True
+                                # print(f"Placing cube {cube_idx} at ({x}, {y}, {z}) with orientation {cube_with_orientation.faces}")
+
+                                if solve_sudoku_3d(board, sides, cubes, used, idx + 1):
+                                    return True
+
+                                # Backtrack
+                                board[x][y][z] = None
+                                remove_cube_from_sides(sides, cube_with_orientation, x, y, z, size)
+                                used[cube_idx] = False
+                                # print(f"Backtracking from ({x}, {y}, {z})")
                     return False
+
     print(f"No solution found with current configuration, idx: {idx}")
     return False
 
@@ -84,6 +90,23 @@ def print_board(board):
             row = [f"{board[x][y][z]}" for x in range(3)]
             print(' | '.join(row))
         print()
+
+
+def expand_fuzzy69(c: CubeCollection):
+    fuzz = []
+    idx = c[-1].index + 1
+    for cube in c:
+        # Allow for possibility of a 6, a 9, or both on each cube
+        if 6 in cube.faces:
+            new_cube = Cube([9 if x == 6 else x for x in cube.faces], idx)
+            idx += 1
+            fuzz.append(new_cube)
+        if 9 in cube.faces:
+            new_cube = Cube([6 if x == 9 else x for x in cube.faces], idx)
+            idx += 1
+            fuzz.append(new_cube)
+    print(f' Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity')
+    c.extend(fuzz)
 
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
@@ -123,6 +146,9 @@ cubes = CubeCollection([
     [8, 0, 0, 0, 0, 0],
 ])
 assert len(cubes) == CUBE_LEN **3
+# expand the list to allow for fuzzy matching of 6s and 9s, treat them as having MORE cubes to choose from
+expand_fuzzy69(cubes)
+
 used = [False] * len(cubes)
 
 # Try solving the puzzle

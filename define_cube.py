@@ -70,5 +70,11 @@ class CubeCollection:
     def __len__(self):
         return len(self.cubes)
 
-    def get(self, n:int) -> Cube:
+    def __getitem__(self, n:int) -> Cube:
         return self.cubes[n]
+
+    def __iter__(self):
+        return iter(self.cubes)
+
+    def extend(self, cubes:list):
+        self.cubes.extend(cubes)
