@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Import the Cube class and the cubes list from the cubes_definition file
 from define_cube import Cube, CubeCollection, Sides
 from typing import List, Set
@@ -43,20 +45,27 @@ def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z:
             # print(f"Removed {cube[side]} from {side.name} set")
 
 def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int) -> bool:
+    global max_used, iters
+
     size = len(board)
     if idx == size **3:
         print("All cubes placed successfully.")
         return True  # All cubes placed
-
+    if idx > max_used:
+        max_used = idx
+        print(f'Used {max_used}')
+        if max_used >= 24:
+            print_board(board)
     # Iterate over all positions
     for x in range(size):
         for y in range(size):
             for z in range(size):
                 if board[x][y][z] is None:  # Check for empty spot
-                    # print(f"Empty spot found at ({x}, {y}, {z})")
-
                     # Try each cube
                     for cube_idx, cube in enumerate(cubes):
+                        iters +=1
+                        if iters % 10000 == 0:
+                            print('.', end='')
                         if used[cube_idx]:
                             continue  # Skip used cubes
 
@@ -66,8 +75,6 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 board[x][y][z] = cube_with_orientation
                                 update_sides(sides, cube_with_orientation, x, y, z, size)
                                 used[cube_idx] = True
-                                # print(f"Placing cube {cube_idx} at ({x}, {y}, {z}) with orientation {cube_with_orientation.faces}")
-
                                 if solve_sudoku_3d(board, sides, cubes, used, idx + 1):
                                     return True
 
@@ -75,7 +82,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 board[x][y][z] = None
                                 remove_cube_from_sides(sides, cube_with_orientation, x, y, z, size)
                                 used[cube_idx] = False
-                                # print(f"Backtracking from ({x}, {y}, {z})")
+                                pass
                     return False
 
     print(f"No solution found with current configuration, idx: {idx}")
@@ -105,7 +112,7 @@ def expand_fuzzy69(c: CubeCollection):
             new_cube = Cube([6 if x == 9 else x for x in cube.faces], idx)
             idx += 1
             fuzz.append(new_cube)
-    print(f' Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity')
+    print(f'Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity')
     c.extend(fuzz)
 
 
@@ -115,9 +122,10 @@ board = [[[None for _ in range(CUBE_LEN)] for _ in range(CUBE_LEN)] for _ in ran
 # Efficiently keep track of which numbers are placed on each side. Order top, bottom, left, right, front, back
 sides = [set() for _ in range(6)]
 
+# Specific problem to solve
 cubes = CubeCollection([
     # order top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
-    [1, 0, 3, 0, 1, 0],  # Specific problem to solve
+    [1, 0, 3, 0, 1, 0],
     [7, 0, 0, 5, 0, 0],
     [4, 0, 0, 5, 0, 0],
     [4, 0, 0, 0, 0, 0],
@@ -150,7 +158,8 @@ assert len(cubes) == CUBE_LEN **3
 expand_fuzzy69(cubes)
 
 used = [False] * len(cubes)
-
+max_used = 0
+iters=0
 # Try solving the puzzle
 if solve_sudoku_3d(board, sides, cubes, used, 0):
     print("Sudoku Solved!")

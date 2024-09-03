@@ -1,4 +1,5 @@
 from enum import Enum
+from ordered_set import OrderedSet
 
 class Sides(Enum):
     top = 0
@@ -13,6 +14,7 @@ class Cube:
     def __init__(self, faces, index=None):
         self.faces = faces  # A list with six numbers, 0 if face is blank
         self.index = index  # Optional index for identification
+        self.rotate_cache = None
         return
 
     def __getitem__(self, side: Sides):
@@ -32,8 +34,11 @@ class Cube:
             )
             orientations.add(Cube(new_faces, index=self.index)) # create as tuple
 
+        if self.rotate_cache:
+            return self.rotate_cache
+
         # All unique orientations of the cube (up to 24), skipping
-        orientations = set()
+        orientations = OrderedSet()
         # Define mappings, each is an orientation of the cube with a specific face at the top:
         # [top, bottom, left, right, front, back]
         face_mappings = [
@@ -51,7 +56,8 @@ class Cube:
                 add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
                 # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
                 left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
-        return orientations
+        self.rotate_cache = orientations
+        return self.rotate_cache
 
     # Count the number of nonblank faces
     def nonblanks(self):
