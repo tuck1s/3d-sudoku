@@ -1,60 +1,73 @@
 # Import the Cube class and the cubes list from the cubes_definition file
-from define_cube import Cube, CubeCollection
+from define_cube import Cube, CubeCollection, Sides
+from typing import List, Set
 
 def is_interchangeable(a, b):
     # Treat 6 and 9 as interchangeable, and 0 as a wildcard (blank face)
     return (a == b) or (a == 6 and b == 9) or (a == 9 and b == 6) or a == 0 or b == 0
 
-def is_valid(board, cube, x, y, z):
-    print(f"Checking validity for cube at ({x}, {y}, {z}) with orientation {cube.faces}")
+# Define position checks for all six sides
+def generate_checks(x: int, y: int, z: int, size: int) -> dict:
+    return {
+        Sides.left: x == 0,
+        Sides.right: x == size - 1,
+        Sides.front: y == size - 1,
+        Sides.back: y == 0,
+        Sides.top: z == size - 1,
+        Sides.bottom: z == 0,
+    }
 
-    if x > 0:  # Check left
-        if not is_interchangeable(board[x-1][y][z].faces[3], cube.faces[2]):  # Left face
-            print(f"Invalid: Left face mismatch at ({x-1}, {y}, {z})")
-            return False
-    if x < 2:  # Check right
-        if not is_interchangeable(board[x+1][y][z].faces[2], cube.faces[3]):  # Right face
-            print(f"Invalid: Right face mismatch at ({x+1}, {y}, {z})")
-            return False
-    if y > 0:  # Check front
-        if not is_interchangeable(board[x][y-1][z].faces[4], cube.faces[5]):  # Front face
-            print(f"Invalid: Front face mismatch at ({x}, {y-1}, {z})")
-            return False
-    if y < 2:  # Check back
-        if not is_interchangeable(board[x][y+1][z].faces[5], cube.faces[4]):  # Back face
-            print(f"Invalid: Back face mismatch at ({x}, {y+1}, {z})")
-            return False
-    if z > 0:  # Check bottom
-        if not is_interchangeable(board[x][y][z-1].faces[1], cube.faces[1]):  # Bottom face
-            print(f"Invalid: Bottom face mismatch at ({x}, {y}, {z-1})")
-            return False
-    if z < 2:  # Check top
-        if not is_interchangeable(board[x][y][z+1].faces[0], cube.faces[0]):  # Top face
-            print(f"Invalid: Top face mismatch at ({x}, {y}, {z+1})")
-            return False
+def is_valid(sides:list, cube:Cube, x:int, y:int, z:int, size:int) -> bool:
+    # print(f"Checking validity for cube at ({x}, {y}, {z}) with orientation {cube}")
+    checks = generate_checks(x, y, z, size)
+    # Iterate over all sides
+    for side in Sides:
+        if checks[side]:  # Check if the current side is on the border of the cube
+            if cube[side] == 0:  # No blank face allowed
+                # print(f"Not placing a blank {cube[side]} on the {side.name} face")
+                return False
+            if cube[side] in sides[side.value]:  # No repeating number on the same face
+                print(f"Already got a {cube[side]} on the {side.name} face")
+                return False
     return True
 
+def update_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z: int, size: int):
+    checks = generate_checks(x, y, z, size)
+    for side in Sides:
+        if checks[side]:
+            sides[side.value].add(cube[side])
+            # print(f"Added {cube[side]} to {side.name} set")
 
-def solve_sudoku_3d(board, cubes:CubeCollection, used, idx):
+def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z: int, size: int):
+    checks = generate_checks(x, y, z, size)
+
+    for side in Sides:
+        if checks[side]:
+            sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
+            # print(f"Removed {cube[side]} from {side.name} set")
+
+def solve_sudoku_3d(board:list, sides:List[Set[int]], cubes:CubeCollection, used, idx):
     if idx == len(cubes):
         print("All cubes placed successfully.")
         return True  # All cubes placed
-
-    for x in range(3):
-        for y in range(3):
-            for z in range(3):
-                if board[x][y][z].faces == [0]*6:  # Check for empty cube
+    size = len(board)
+    for x in range(size):
+        for y in range(size):
+            for z in range(size):
+                if board[x][y][z] is None:  # Check for empty cube
                     print(f"Empty spot found at ({x}, {y}, {z})")
                     combinations = cubes.get(idx).rotate()
                     # print(f'Cube with {cubes[idx].nonblanks()} marked faces has combinations={len(combinations)}')
                     for cube_with_orientation in combinations:
-                        if is_valid(board, cube_with_orientation, x, y, z):
+                        if is_valid(sides, cube_with_orientation, x, y, z, size):
                             board[x][y][z] = cube_with_orientation
+                            update_sides(sides, cube_with_orientation, x, y, z, size)
                             used[idx] = True
                             print(f"Placing cube {idx} at ({x}, {y}, {z}) with orientation {cube_with_orientation.faces}")
-                            if solve_sudoku_3d(board, cubes, used, idx+1):
+                            if solve_sudoku_3d(board, sides, cubes, used, idx+1):
                                 return True
-                            board[x][y][z] = empty_cube  # Backtrack
+                            board[x][y][z] = None  # Backtrack
+                            remove_cube_from_sides(sides, cube_with_orientation, x, y, z, size)
                             used[idx] = False
                             print(f"Backtracking from ({x}, {y}, {z})")
                     print(f"No valid placement for cube {idx} at ({x}, {y}, {z}) with all orientations, backtracking...")
@@ -73,9 +86,12 @@ def print_board(board):
         print()
 
 
-# Create an empty 3x3x3 board, where each cell starts with a default cube (empty)
-empty_cube = Cube([0]*6)  # Create an empty cube with all faces as zero
-board = [[[empty_cube for _ in range(3)] for _ in range(3)] for _ in range(3)]
+# Create an empty nxnxn board, where each cell starts with a default cube (empty)
+CUBE_LEN = 3
+board = [[[None for _ in range(CUBE_LEN)] for _ in range(CUBE_LEN)] for _ in range(CUBE_LEN)]
+# Efficiently keep track of which numbers are placed on each side. Order top, bottom, left, right, front, back
+sides = [set() for _ in range(6)]
+
 cubes = CubeCollection([
     # order top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
     [1, 0, 3, 0, 1, 0],  # Specific problem to solve
@@ -106,10 +122,11 @@ cubes = CubeCollection([
     [2, 0, 0, 6, 2, 0],
     [8, 0, 0, 0, 0, 0],
 ])
+assert len(cubes) == CUBE_LEN **3
 used = [False] * len(cubes)
 
 # Try solving the puzzle
-if solve_sudoku_3d(board, cubes, used, 0):
+if solve_sudoku_3d(board, sides, cubes, used, 0):
     print("Sudoku Solved!")
     print_board(board)
 

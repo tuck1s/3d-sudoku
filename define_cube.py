@@ -1,10 +1,22 @@
-from itertools import permutations
+from enum import Enum
+
+class Sides(Enum):
+    top = 0
+    bottom = 1
+    left = 2
+    right = 3
+    front = 4
+    back = 5
+
 
 class Cube:
     def __init__(self, faces, index=None):
         self.faces = faces  # A list with six numbers, 0 if face is blank
         self.index = index  # Optional index for identification
         return
+
+    def __getitem__(self, side: Sides):
+        return self.faces[side.value]
 
     # Return a set of up to 24 unique orientations of this cube, as a set of Cube
     # duplicates which may be caused by having the same numbers (or blanks) on some faces
