@@ -1,5 +1,5 @@
 from enum import Enum
-from ordered_set import OrderedSet
+import copy
 
 class Sides(Enum):
     top = 0
@@ -14,7 +14,7 @@ class Cube:
     def __init__(self, faces, index=None):
         self.faces = faces  # A list with six numbers, 0 if face is blank
         self.index = index  # Optional index for identification
-        self.rotate_cache = None
+        self.rotate_cache = []
         self.doppelganger = None # mark if this is a 6 / 9 doppelganger
         return
 
@@ -33,13 +33,13 @@ class Cube:
                 self.faces[front_idx],   # Front
                 self.faces[back_idx]     # Back
             )
-            orientations.add(Cube(new_faces, index=self.index)) # create as tuple
+            orientations.add(new_faces) # create as tuple, so that duplicates are eliminated
 
         if self.rotate_cache:
             return self.rotate_cache
 
         # All unique orientations of the cube (up to 24), skipping
-        orientations = OrderedSet()
+        orientations = set()
         # Define mappings, each is an orientation of the cube with a specific face at the top:
         # [top, bottom, left, right, front, back]
         face_mappings = [
@@ -57,7 +57,9 @@ class Cube:
                 add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
                 # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
                 left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
-        self.rotate_cache = orientations
+
+        for c in orientations:
+            self.rotate_cache.append(Cube(list(c), index=self.index))
         return self.rotate_cache
 
     # Count the number of nonblank faces
@@ -96,3 +98,43 @@ class CubeCollection:
         for c in self.cubes:
             n *= len(c.rotate())
         return n
+
+# Storage for solutions found
+class Solutions:
+    def __init__(self):
+        self.found = []
+        self.ping = 0
+        self.iters = 0 # count iterations
+
+    def rec_iter(self):
+        self.iters += 1
+        self.ping += 1
+        if self.ping > 100000:
+            print('.', end='', flush=True) # emit a progress "ping"
+            self.ping = 0
+
+    def add(self, board):
+        size = len(board)
+        for i, f in enumerate(self.found):
+            same = True  # Start with the assumption that they are the same
+            for x in range(size):
+                for y in range(size):
+                    for z in range(size):
+                        if board[x][y][z] != f[x][y][z]:
+                            same = False
+                            break  # Exit the innermost loop
+                    if not same:
+                        break  # Exit the middle loop
+                if not same:
+                    break  # Exit the outer loop
+
+            # If an identical match is found, we don't add the new board
+            if same:
+                print(f'duplicate of solution {i+1}')
+                return
+
+        # If no duplicates are found, add the new board to the list
+        self.found.append(copy.deepcopy(board))
+
+    def __len__(self):
+        return len(self.found)

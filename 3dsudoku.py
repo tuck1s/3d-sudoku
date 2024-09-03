@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Import the Cube class and the cubes list from the cubes_definition file
-from define_cube import Cube, CubeCollection, Sides
+from define_cube import Cube, CubeCollection, Sides, Solutions
 from typing import List, Set
 
 # Define position checks for all six sides
@@ -38,12 +38,11 @@ def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z:
             sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
 
 
-def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int) -> bool:
-    global iters, solutions
+def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int, solutions:Solutions) -> bool:
     size = len(board)
     if idx == size * size * size:
-        solutions += 1
-        print(f'Solution #{solutions}')
+        solutions.add(board)
+        print(f'Solution #{len(solutions)}')
         print_board(board)
         return True  # All cubes placed
 
@@ -57,10 +56,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                         if used[cube_idx] or (cube.doppelganger and used[cube.doppelganger]):
                             continue  # Skip used cubes
                         # progress marker
-                        iters +=1
-                        if iters > 100000:
-                            print('.', end='', flush=True)
-                            iters = 0
+                        solutions.rec_iter()
                         # Try all orientations of the current cube
                         for cube_with_orientation in cube.rotate():
                             if is_valid(sides, cube_with_orientation, x, y, z, size):
@@ -69,7 +65,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 used[cube_idx] = True
                                 if cube_with_orientation.doppelganger:
                                     used[cube_with_orientation.doppelganger] = True
-                                if solve_sudoku_3d(board, sides, cubes, used, idx + 1):
+                                if solve_sudoku_3d(board, sides, cubes, used, idx + 1, solutions):
                                     pass # look for more solutions
 
                                 # Backtrack
@@ -112,7 +108,6 @@ def expand_fuzzy69(cubeCollection: CubeCollection):
             fuzz.append(new_cube)
     print(f'Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity, marking doppelgangers')
     cubeCollection.extend(fuzz)
-
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
 CUBE_LEN = 3
@@ -162,12 +157,11 @@ cubes = CubeCollection([
 assert len(cubes) == CUBE_LEN **3
 # expand the list to allow for fuzzy matching of 6s and 9s, treat them as having MORE cubes to choose from
 expand_fuzzy69(cubes)
-# cubes = CubeCollection(sorted(cubes, key=lambda x: x.nonblanks(), reverse=True))
-print(cubes)
-# cubes.permutations()
+print(cubes, '\n')
+print('Possible permutations of all cube orientations, including ambiguous 6/9s:',cubes.permutations())
 
 used = [False] * len(cubes)
 iters=0
-solutions = 0
+solutions = Solutions()
 # Try solving the puzzle
-solve_sudoku_3d(board, sides, cubes, used, 0)
+solve_sudoku_3d(board, sides, cubes, used, 0, solutions)
