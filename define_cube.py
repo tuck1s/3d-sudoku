@@ -1,66 +1,13 @@
-from enum import Enum
-import copy
-
-class Sides(Enum):
-    top = 0
-    bottom = 1
-    left = 2
-    right = 3
-    front = 4
-    back = 5
-
+from marks import Marks, Sides
 
 class Cube:
-    def __init__(self, faces, index=None):
+    def __init__(self, faces):
+        assert len(faces) == 6
         self.faces = faces  # A list with six numbers, 0 if face is blank
-        self.index = index  # Optional index for identification
-        self.rotate_cache = []
-        self.doppelganger = None # mark if this is a 6 / 9 doppelganger
-        return
+        self.variants_cache = [] # Expand on-demand
 
     def __getitem__(self, side: Sides):
         return self.faces[side.value]
-
-    # Return a set of up to 24 unique orientations of this cube, as a set of Cube
-    # duplicates which may be caused by having the same numbers (or blanks) on some faces
-    def rotate(self):
-        def add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx):
-            new_faces = (
-                self.faces[top_idx],     # Top
-                self.faces[bottom_idx],  # Bottom
-                self.faces[left_idx],    # Left
-                self.faces[right_idx],   # Right
-                self.faces[front_idx],   # Front
-                self.faces[back_idx]     # Back
-            )
-            orientations.add(new_faces) # create as tuple, so that duplicates are eliminated
-
-        if self.rotate_cache:
-            return self.rotate_cache
-
-        # All unique orientations of the cube (up to 24), skipping
-        orientations = set()
-        # Define mappings, each is an orientation of the cube with a specific face at the top:
-        # [top, bottom, left, right, front, back]
-        face_mappings = [
-            [0, 1, 2, 3, 4, 5],  # Top is 0
-            [1, 0, 3, 2, 4, 5],  # Top is 1
-            [2, 3, 0, 1, 5, 4],  # Top is 2
-            [3, 2, 1, 0, 5, 4],  # Top is 3
-            [4, 5, 2, 3, 1, 0],  # Top is 4
-            [5, 4, 3, 2, 1, 0]   # Top is 5
-        ]
-        for top in range(len(face_mappings)):
-            # Expand the mappings
-            top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx = face_mappings[top]
-            for _ in range(4):
-                add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
-                # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
-                left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
-
-        for c in orientations:
-            self.rotate_cache.append(Cube(list(c), index=self.index))
-        return self.rotate_cache
 
     # Count the number of nonblank faces
     def nonblanks(self):
@@ -68,73 +15,67 @@ class Cube:
 
     def __str__(self):
         faces_str = ' '.join(str(face) if face >0 else '-' for face in self.faces)
-        doppel = f'doppelganger={self.doppelganger}' if self.doppelganger else ''
-        return f'{self.index:2} Faces: {faces_str} {doppel}'
+        return f'{faces_str}'
 
+    # Variants are created once, cached and returned
+    def variants(self):
+        if self.variants_cache:
+            return self.variants_cache
+        else:
+            self.variants_cache = rotations(self)
+            alt = alternate_69(self)
+            if alt.faces != self.faces:
+                self.variants_cache.extend(rotations(alt))
+            return self.variants_cache
+
+
+# Return an alternative cube due to 6 / 9 ambiguity
+def alternate_69(cube:Cube) -> Cube:
+    swap = [0, 1, 2, 3, 4, 5, 9, 7, 8, 6]
+    alt = list(map(lambda face: swap[face], cube.faces))
+    return Cube(alt)
+
+# Return a list of up to 24 unique orientations of a cube
+def rotations(cube:Cube) -> list:
+    def add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx):
+        new_faces = (
+            cube.faces[top_idx],     # Top
+            cube.faces[bottom_idx],  # Bottom
+            cube.faces[left_idx],    # Left
+            cube.faces[right_idx],   # Right
+            cube.faces[front_idx],   # Front
+            cube.faces[back_idx]     # Back
+        )
+        face_tuple_set.add(new_faces) # create as tuple, so that duplicates are eliminated
+
+    # All unique orientations of the cube (up to 24)
+    face_tuple_set = set()
+    # Define mappings, each is an orientation of the cube with a specific face at the top:
+    # [top, bottom, left, right, front, back]
+    face_mappings = [
+        [0, 1, 2, 3, 4, 5],  # Top is 0
+        [1, 0, 3, 2, 4, 5],  # Top is 1
+        [2, 3, 0, 1, 5, 4],  # Top is 2
+        [3, 2, 1, 0, 5, 4],  # Top is 3
+        [4, 5, 2, 3, 1, 0],  # Top is 4
+        [5, 4, 3, 2, 1, 0]   # Top is 5
+    ]
+    for top in range(len(face_mappings)):
+        # Expand the mappings
+        top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx = face_mappings[top]
+        for _ in range(4):
+            add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
+            # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
+            left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
+    return [Cube(list(c)) for c in face_tuple_set]
+
+
+# There is always one cube completely blank. Each cube can have variants due to 6 / 9 and different rotations
 class CubeCollection:
     def __init__(self, faces:list):
-        self.cubes = []
-        for i, v in enumerate(faces):
-            self.cubes.append(Cube(v, index=i))
-
-    def __len__(self):
-        return len(self.cubes)
-
-    def __getitem__(self, n:int) -> Cube:
-        return self.cubes[n]
-
-    def __iter__(self):
-        return iter(self.cubes)
-
-    def __str__(self):
-        coll_str = '\n'.join(str(cube) for cube in self.cubes)
-        return coll_str
-
-    def extend(self, cubes:list):
-        self.cubes.extend(cubes)
-
-    def permutations(self):
-        n = 1
-        for c in self.cubes:
-            n *= len(c.rotate())
-        return n
-
-# Storage for solutions found
-class Solutions:
-    def __init__(self):
-        self.found = []
-        self.ping = 0
-        self.iters = 0 # count iterations
-
-    def rec_iter(self):
-        self.iters += 1
-        self.ping += 1
-        if self.ping > 100000:
-            print('.', end='', flush=True) # emit a progress "ping"
-            self.ping = 0
-
-    def add(self, board):
-        size = len(board)
-        for i, f in enumerate(self.found):
-            same = True  # Start with the assumption that they are the same
-            for x in range(size):
-                for y in range(size):
-                    for z in range(size):
-                        if board[x][y][z] != f[x][y][z]:
-                            same = False
-                            break  # Exit the innermost loop
-                    if not same:
-                        break  # Exit the middle loop
-                if not same:
-                    break  # Exit the outer loop
-
-            # If an identical match is found, we don't add the new board
-            if same:
-                print(f'duplicate of solution {i+1}')
-                return
-
-        # If no duplicates are found, add the new board to the list
-        self.found.append(copy.deepcopy(board))
-
-    def __len__(self):
-        return len(self.found)
+        self.marked_cubes = [[] for _ in range(len(Marks))]
+        for v in faces:
+            c = Cube(v)
+            marks = c.nonblanks()
+            self.marked_cubes[marks].append(c)
+        return

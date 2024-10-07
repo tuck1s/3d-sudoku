@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Import the Cube class and the cubes list from the cubes_definition file
-from define_cube import Cube, CubeCollection, Sides, Solutions
+from define_cube import Cube, CubeCollection, Sides
+from board import Board
+from solutions import Solutions
 from typing import List, Set
 
 # Define position checks for all six sides
@@ -46,7 +48,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
         print_board(board)
         return True  # All cubes placed
 
-    # Iterate over all positions
+    # Iterate over all permutations of the positions
     for x in range(size):
         for y in range(size):
             for z in range(size):
@@ -55,8 +57,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                     for cube_idx, cube in enumerate(cubes):
                         if used[cube_idx] or (cube.doppelganger and used[cube.doppelganger]):
                             continue  # Skip used cubes
-                        # progress marker
-                        solutions.rec_iter()
+                        solutions.rec_iter() # progress marker
                         # Try all orientations of the current cube
                         for cube_with_orientation in cube.rotate():
                             if is_valid(sides, cube_with_orientation, x, y, z, size):
@@ -66,7 +67,7 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                 if cube_with_orientation.doppelganger:
                                     used[cube_with_orientation.doppelganger] = True
                                 if solve_sudoku_3d(board, sides, cubes, used, idx + 1, solutions):
-                                    pass # look for more solutions
+                                    return True # pass # look for more solutions
 
                                 # Backtrack
                                 board[x][y][z] = None
@@ -88,35 +89,12 @@ def print_board(board):
         print()
 
 
-# Need to mark which ones are considered doubles so we don't over-use them
-def expand_fuzzy69(cubeCollection: CubeCollection):
-    fuzz = []
-    idx = cubeCollection[-1].index + 1 # mark them as distinct
-    for cube in cubeCollection:
-        # Allow for possibility of a 6, a 9, or both on each cube
-        if 6 in cube.faces:
-            new_cube = Cube([9 if x == 6 else x for x in cube.faces], idx)
-            idx += 1
-            cube.doppelganger = new_cube.index
-            new_cube.doppelganger = cube.index
-            fuzz.append(new_cube)
-        if 9 in cube.faces:
-            new_cube = Cube([6 if x == 9 else x for x in cube.faces], idx)
-            idx += 1
-            cube.doppelganger = new_cube.index
-            new_cube.doppelganger = cube.index
-            fuzz.append(new_cube)
-    print(f'Extending cube collection by {len(fuzz)} for 6 / 9 ambiguity, marking doppelgangers')
-    cubeCollection.extend(fuzz)
-
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
 CUBE_LEN = 3
-board = [[[None for _ in range(CUBE_LEN)] for _ in range(CUBE_LEN)] for _ in range(CUBE_LEN)]
-# Efficiently keep track of which numbers are placed on each side. Order top, bottom, left, right, front, back
-sides = [set() for _ in range(6)]
+board = Board(CUBE_LEN)
 
 # Specific problem to solve
-cubes = CubeCollection([
+pieces = [
     # order top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
 
     # blank
@@ -153,15 +131,15 @@ cubes = CubeCollection([
     [8, 0, 0, 1, 0, 8], #24=O
     [3, 0, 1, 0, 6, 0], #25=P
     [2, 0, 0, 6, 2, 0], #26=Q
-])
-assert len(cubes) == CUBE_LEN **3
-# expand the list to allow for fuzzy matching of 6s and 9s, treat them as having MORE cubes to choose from
-expand_fuzzy69(cubes)
-print(cubes, '\n')
-print('Possible permutations of all cube orientations, including ambiguous 6/9s:',cubes.permutations())
+]
+assert len(pieces) == CUBE_LEN **3
+cubes = CubeCollection(pieces)
+for group in cubes.marked_cubes:
+    for c in group:
+        v = len(c.variants())
+        print(f'Cube: {c}, variants: {v}')
 
-used = [False] * len(cubes)
 iters=0
 solutions = Solutions()
 # Try solving the puzzle
-solve_sudoku_3d(board, sides, cubes, used, 0, solutions)
+# solve_sudoku_3d(board, cubes, 0, solutions)
