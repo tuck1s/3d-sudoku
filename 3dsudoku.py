@@ -4,6 +4,7 @@
 from define_cube import Cube, CubeCollection
 from board import Board, BoardSlot
 from solutions import Solutions
+from marks import Sides
 from copy import deepcopy
 '''
 # Define position checks for all six sides
@@ -40,33 +41,76 @@ def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z:
             sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
 '''
 
+# The temporary board state as a solution is explored
+class State:
+    def __init__(self, n:int):
+        self.sides = [set() for _ in range(len(Sides))]
+        self.piece = [None for _ in range(n)]
+
+    # place a cube in a board slot
+    def place_cube(self, idx:int, cube):
+        self.piece[idx] = cube
+        # Add the marked faces to the corresponding board sides
+        for i in range(len(cube.faces)):
+            self.sides[i].add(cube.faces[i])
+        return
+
+    def unplace_cube(self, idx:int, cube):
+        self.piece[idx] = None
+        # Add the marked faces to the corresponding board sides
+        for i in range(len(cube.faces)):
+            self.sides[i].remove(cube.faces[i])
+
+    def __str__(self):
+        res = ''
+        for p in self.piece:
+            res += str(p) + ' '
+        return res
+
 # Is it valid to place a cube variant at this position on the board?
 # If any number on this cube variant already appears on the corresponding side, then it's not valid
-def is_valid(board: Board, cube:Cube) -> bool:
+def is_valid(state: State, board:Board, pos:int, cube:Cube) -> bool:
+    # Check this cube has numbers showing on its faces that will be visible
+    for face in board.strip[pos].sides_touched:
+        if cube.faces[face.value] == 0:
+            return False
     for i in range(len(cube.faces)):
-        if cube.faces[i] in board.sides[i]:
+        if cube.faces[i] in state.sides[i]:
             return False
     return True
 
 
 def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
-    # Iterate over all slots in the board strip
-    for pos, slot in enumerate(board.strip):
-        marks = len(slot.sides_touched) # look for candidate pieces that have the expected number of face marks
-        x, y, z = slot.pos # for grid
+
+    # Iterate over a specific slot position
+    def solve_from_pos(pos: int) -> bool:
+        if pos >= len(board.strip):
+            print('Got to end of strip')
+            return True
+
+        marks = len(board.strip[pos].sides_touched) # look for candidate pieces that have the expected number of face marks
         # Try all cubes with the required number of face marks
-        placed = False
-        for j, cube in enumerate(cubes.marked_cubes[marks]):
+        for cube in cubes.marked_cubes[marks]:
             # Try all variants of this cube
-            for k, variant in enumerate(cube.variants()):
-                if is_valid(board, variant):
-                    board.place_cube(slot, variant)
-                    placed = True
-                    break
-            if placed:
-                break
-        if not placed:
-            break
+            variants = cube.variants()
+            for variant in variants:
+                print(f'{"-"*pos}trying {cube} variant {variant}')
+                if is_valid(state, board, pos, variant):
+                    state.place_cube(pos, variant)
+                    print(state)
+                    # TODO: remove used cubes from possibles as we go, will need another struct
+                    solved = solve_from_pos(pos+1)
+                    if solved:
+                        return True
+                    else:
+                        state.unplace_cube(pos, variant) # Remove the face marks accruing from this
+        # Tried all cubes, nothing fits
+        return False
+
+    state = State(len(board.strip))
+    solved = solve_from_pos(0)
+    print(solved)
+
 
 
     '''
