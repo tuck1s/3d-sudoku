@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 # Import the Cube class and the cubes list from the cubes_definition file
-from define_cube import Cube, CubeCollection, Sides
-from board import Board
+from define_cube import Cube, CubeCollection
+from board import Board, BoardSlot
 from solutions import Solutions
-from typing import List, Set
-
+from copy import deepcopy
+'''
 # Define position checks for all six sides
 def generate_checks(x: int, y: int, z: int, size: int) -> dict:
     return {
@@ -38,16 +38,38 @@ def remove_cube_from_sides(sides: List[Set[int]], cube: Cube, x: int, y: int, z:
     for side in Sides:
         if checks[side]:
             sides[side.value].discard(cube[side])  # Use discard to avoid KeyError if the element is not present
+'''
+
+# Is it valid to place a cube variant at this position on the board?
+# If any number on this cube variant already appears on the corresponding side, then it's not valid
+def is_valid(board: Board, cube:Cube) -> bool:
+    for i in range(len(cube.faces)):
+        if cube.faces[i] in board.sides[i]:
+            return False
+    return True
 
 
-def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used: List[bool], idx: int, solutions:Solutions) -> bool:
-    size = len(board)
-    if idx == size * size * size:
-        solutions.add(board)
-        print(f'Solution #{len(solutions)}')
-        print_board(board)
-        return True  # All cubes placed
+def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
+    # Iterate over all slots in the board strip
+    for pos, slot in enumerate(board.strip):
+        marks = len(slot.sides_touched) # look for candidate pieces that have the expected number of face marks
+        x, y, z = slot.pos # for grid
+        # Try all cubes with the required number of face marks
+        placed = False
+        for j, cube in enumerate(cubes.marked_cubes[marks]):
+            # Try all variants of this cube
+            for k, variant in enumerate(cube.variants()):
+                if is_valid(board, variant):
+                    board.place_cube(slot, variant)
+                    placed = True
+                    break
+            if placed:
+                break
+        if not placed:
+            break
 
+
+    '''
     # Iterate over all permutations of the positions
     for x in range(size):
         for y in range(size):
@@ -77,16 +99,9 @@ def solve_sudoku_3d(board: list, sides: List[Set[int]], cubes: List[Cube], used:
                                     used[cube_with_orientation.doppelganger] = False
                     return False
     return False
+    '''
 
 
-def print_board(board):
-    for z in range(3):
-        print(f"Layer {z}:")
-        for y in range(3):
-            # Create a list of string representations for each cube in the row
-            row = [f"{board[x][y][z]}" for x in range(3)]
-            print(' | '.join(row))
-        print()
 
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
@@ -142,4 +157,7 @@ for group in cubes.marked_cubes:
 iters=0
 solutions = Solutions()
 # Try solving the puzzle
-# solve_sudoku_3d(board, cubes, 0, solutions)
+
+#board.add(0, cubes.marked_cubes[0][0])
+#print(board)
+solve_sudoku_3d(board, cubes, solutions)

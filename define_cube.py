@@ -67,15 +67,15 @@ def rotations(cube:Cube) -> list:
             add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
             # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
             left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
-    return [Cube(list(c)) for c in face_tuple_set]
+    return [Cube(c) for c in face_tuple_set]
 
 
 # There is always one cube completely blank. Each cube can have variants due to 6 / 9 and different rotations
 class CubeCollection:
     def __init__(self, faces:list):
-        self.marked_cubes = [[] for _ in range(len(Marks))]
+        self.marked_cubes = [ set() for _ in range(len(Marks))]
         for v in faces:
             c = Cube(v)
             marks = c.nonblanks()
-            self.marked_cubes[marks].append(c)
+            self.marked_cubes[marks].add(c)
         return
