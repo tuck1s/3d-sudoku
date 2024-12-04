@@ -1,11 +1,12 @@
 
-from marks import Marks, Sides
+from marks import Sides
+from define_cube import Cube
 
 # A slot within the linear board (strip) representation
 class BoardSlot:
     def __init__(self, sides_touched:set, pos:tuple):
         self.sides_touched = sides_touched
-        self.pos = pos
+        # self.pos = pos
 
 class Board:
     def __init__(self, size):
@@ -23,27 +24,68 @@ class Board:
         self.strip = []
 
         # Iterate over all permutations of the positions, determining the affected sides
-        for x in range(size):
+        for z in range(size):
             for y in range(size):
-                for z in range(size):
+                for x in range(size):
                     sides_touched = set(
                         get_sides(x, Sides.left, Sides.right) +
                         get_sides(y, Sides.back, Sides.front) +
                         get_sides(z, Sides.bottom, Sides.top)
                     )
-                    # print(f'Slot ({x}, {y}, {z}) touches sides {sides_touched}')
                     self.strip.append(BoardSlot(sides_touched, (x, y, z)))
-                    self.grid[x][y][z] = self.strip[-1] # strip element just added
-        # Efficiently keep track of which numbers are already placed on each side
+                    self.grid[x][y][z] = len(self.strip)-1 # pos of strip element just added
         return
 
-    # pretty-print string representation of the board state
+
+# The temporary board state as a solution is explored
+class State:
+    def __init__(self, board:Board):
+        self.board = board
+        self.sides = [set() for _ in range(len(Sides))]
+        self.piece = [None for _ in range(len(board.strip))]
+        self.used = set()
+
+    # place a cube
+    def place_cube(self, board:Board, pos:int, cube:Cube, variant:Cube):
+        self.used.add(cube) # use the canonical cube
+        self.piece[pos] = variant
+        # Add the marked faces to the corresponding board sides
+        visible = board.strip[pos].sides_touched
+        for i in visible:
+            face = i.value
+            self.sides[face].add(variant.faces[face])
+        return
+
+    # unplace a cube when backtracking
+    def unplace_cube(self, board:Board, pos:int, cube:Cube, variant:Cube):
+        self.used.remove(cube)  # remove the canonical cube
+        self.piece[pos] = None
+        # Remove the marked faces of the corresponding board sides
+        visible = board.strip[pos].sides_touched
+        for i in visible:
+            face = i.value
+            self.sides[face].remove(variant.faces[face])
+        return
+
+    # Is it valid to place a cube variant at this position into the board state?
+    # If variant shows a blank face -> invalid
+    # If variant shows a number that is already on the corresponding "big cube" side -> invalid
+    def is_valid(self, board:Board, pos:int, variant:Cube) -> bool:
+        visible = board.strip[pos].sides_touched
+        for i in visible:
+            face = i.value
+            if variant.faces[face] == 0 or variant.faces[face] in self.sides[face]:
+                return False
+        return True
+
     def __str__(self):
         res = ''
-        for z in range(len(self.grid)):
-            res += f"Layer {z}:\n"
-            for y in range(len(self.grid[0])):
-                # Create a list of string representations for each cube in the row
-                row = [f"{self.grid[x][y][z].piece}" for x in range(len(self.grid[0][0]))]
-                res += ' | '.join(row) + '\n'
+        size = len(self.board.grid)
+        for z in range(size):
+            for y in range(size):
+                for x in range(size):
+                    pos = self.board.grid[x][y][z]
+                    res += f'{self.piece[pos]} |'
+                res += '\n'
+            res += '\n'
         return res
