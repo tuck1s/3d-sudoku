@@ -15,8 +15,8 @@ class Sides(Enum):
 #   2 marks -> edge (vertex) pieces - 12 of them
 #   3 marks -> corner pieces - 8 of them
 class Marks(Enum):
-    centre = 0,
-    face = 1,
-    edge = 2,
-    corner = 3,
+    centre = 0
+    face = 1
+    edge = 2
+    corner = 3
 
