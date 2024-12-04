@@ -13,17 +13,17 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
             solutions.add(state)
             return False # set to False to keep looking for other solutions
 
-        marks = board.strip[pos].sides_touched # look for candidate pieces that have the expected number of face marks
-        # Try all cubes with the required number of face marks
-        for cube in cubes.marked_cubes[len(marks)]:
+        # look for candidate pieces that have the expected number of visible faces, that are not already used
+        visible = board.strip[pos].sides_touched
+        for cube in cubes.marked_cubes[len(visible)]:
             if not cube in state.used:
                 for variant in cube.variants():
-                    if state.is_valid(board, pos, variant):
-                        state.place_cube(board, pos, cube, variant)
+                    if state.is_valid(visible, variant):
+                        state.place_cube(visible, pos, cube, variant)
                         if solve_from_pos(pos+1):
                             return True
                         else:
-                            state.unplace_cube(board, pos, cube, variant) # Remove the face marks accruing from this
+                            state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
         return False # Tried all cubes, nothing fits
 
     state = State(board)
@@ -74,9 +74,8 @@ pieces = [
 ]
 assert len(pieces) == CUBE_LEN **3
 cubes = CubeCollection(pieces)
-solutions = Solutions()
+solutions = Solutions(board)
 # Try solving the puzzle
 solve_sudoku_3d(board, cubes, solutions)
 print(f'Solutions found: {len(solutions)}')
-for s in solutions.found:
-    print(s)
+solutions.dump()
