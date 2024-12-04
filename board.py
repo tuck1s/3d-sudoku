@@ -45,31 +45,28 @@ class State:
         self.used = set()
 
     # place a cube
-    def place_cube(self, visible: list, pos:int, cube:Cube, variant:Cube):
+    def place_cube(self, visible: list[int], pos:int, cube:Cube, variant:Cube):
         self.used.add(cube) # use the canonical cube
         self.piece[pos] = variant
         # Add the marked faces to the corresponding board sides
-        for i in visible:
-            face = i.value
+        for face in visible:
             self.sides[face].add(variant.faces[face])
         return
 
     # unplace a cube when backtracking
-    def unplace_cube(self, visible:list, pos:int, cube:Cube, variant:Cube):
+    def unplace_cube(self, visible:list[int], pos:int, cube:Cube, variant:Cube):
         self.used.remove(cube)  # remove the canonical cube
         self.piece[pos] = None
         # Remove the marked faces of the corresponding board sides
-        for i in visible:
-            face = i.value
+        for face in visible:
             self.sides[face].remove(variant.faces[face])
         return
 
     # Is it valid to place a cube variant at this position into the board state?
     # If variant shows a blank face -> invalid
     # If variant shows a number that is already on the corresponding "big cube" side -> invalid
-    def is_valid(self, visible:list, variant:Cube) -> bool:
-        for i in visible:
-            face = i.value
+    def is_valid(self, visible:list[int], variant:Cube) -> bool:
+        for face in visible:
             if variant.faces[face] == 0 or variant.faces[face] in self.sides[face]:
                 return False
         return True

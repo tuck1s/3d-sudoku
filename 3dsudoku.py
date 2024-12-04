@@ -13,8 +13,8 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
             solutions.add(state)
             return False # set to False to keep looking for other solutions
 
-        # look for candidate pieces that have the expected number of visible faces, that are not already used
-        visible = board.strip[pos].sides_touched
+        # look for candidate pieces that have the expected number of visible faces, that are not already used. Reduce to list of int index values
+        visible = [i.value for i in board.strip[pos].sides_touched]
         for cube in cubes.marked_cubes[len(visible)]:
             if not cube in state.used:
                 for variant in cube.variants():
