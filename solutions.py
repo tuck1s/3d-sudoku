@@ -15,14 +15,11 @@ class Solutions:
             print('.', end='', flush=True) # emit a progress "ping"
             self.ping = 0
 
+    # use set to dedup results
     def add(self, state:State):
         self.rec_iter()
-        print(state)
         sol = tuple(state.piece)
-        if sol in self.found:
-            print(f'duplicate solution')
-        else:
-            self.found.add(sol)
+        self.found.add(sol)
 
     def __len__(self):
         return len(self.found)

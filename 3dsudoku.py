@@ -76,4 +76,7 @@ assert len(pieces) == CUBE_LEN **3
 cubes = CubeCollection(pieces)
 solutions = Solutions()
 # Try solving the puzzle
-print(solve_sudoku_3d(board, cubes, solutions))
+solve_sudoku_3d(board, cubes, solutions)
+print(f'Solutions found: {len(solutions)}')
+for s in solutions.found:
+    print(s)

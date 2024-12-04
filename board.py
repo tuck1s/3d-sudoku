@@ -85,7 +85,7 @@ class State:
             for y in range(size):
                 for x in range(size):
                     pos = self.board.grid[x][y][z]
-                    res += f'{self.piece[pos]} |'
+                    res += f'{self.piece[pos]} | '
                 res += '\n'
             res += '\n'
         return res
