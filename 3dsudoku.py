@@ -4,6 +4,7 @@
 from define_cube import CubeCollection
 from board import Board, State
 from solutions import Solutions
+import random
 
 def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
 
@@ -73,9 +74,9 @@ pieces = [
     [2, 0, 0, 6, 2, 0], #26=Q
 ]
 assert len(pieces) == CUBE_LEN **3
+random.shuffle(pieces) # add randomness so we get to see different starting solutions
 cubes = CubeCollection(pieces)
 solutions = Solutions(board)
 # Try solving the puzzle
 solve_sudoku_3d(board, cubes, solutions)
-print(f'Solutions found: {len(solutions)}')
-solutions.dump()
+print(f'Solutions found: {solutions.total}')
