@@ -27,8 +27,7 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
                         state.place_cube(visible, pos, cube, variant)
                         if solve_from_pos(pos+1):
                             return True
-                        else:
-                            state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
+                        state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
         return False # Tried all cubes, nothing fits
 
     state = State(board, cubes)

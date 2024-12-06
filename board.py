@@ -52,6 +52,7 @@ class State:
             self.cube_variants.append(self._find_valid_variants(visible, cubes))
         return
 
+    # Return the subset of cube variants that have numbers in the expected visible places
     def _find_valid_variants(self, visible, cubes):
         cube_candidates = cubes.marked_cubes[len(visible)]
         return [

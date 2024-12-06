@@ -2,7 +2,7 @@
 from board import Board, State
 import sys, time
 
-# Storage for solutions found
+# Report on solutions found
 class Solutions:
     def __init__(self, board:Board):
         self.board = board
@@ -10,7 +10,7 @@ class Solutions:
         self.ping_time = time.time()
         self.total = 0
 
-    # Progress comfort reporting and execution time output on stderr
+    # Record a solution. Progress comfort reporting and execution time output on stderr
     def add(self, state:State):
         if self.total == 0:
             print('First solution found:')
