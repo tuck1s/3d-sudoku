@@ -4,7 +4,7 @@
 from define_cube import CubeCollection
 from board import Board, State
 from solutions import Solutions
-import random
+import random, sys
 
 def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
 
@@ -17,11 +17,9 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip:
         #   - The visible faces are already known
-        #   - The possible cube variants that could fit in this position are known
+        #   - The possible cube variants that could fit in this position are known (excluding any visible blank faces)
         visible = state.visible[pos]
         for cv in state.cube_variants[pos]:
-            if pos < 5:
-                print('-'*pos)
             cube = cv.cube # The canonical cube being considered
             if not cube in state.used:
                 for variant in cv.variants: # The short list of variant orientations of this cube that might fit
