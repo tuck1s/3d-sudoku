@@ -86,6 +86,13 @@ class State:
                 return False
         return True
 
+    # Simplified validity check - we should never see a blank face
+    def is_valid2(self, visible:list[int], variant:Cube) -> bool:
+        for face in visible:
+            if variant.faces[face] in self.sides[face]:
+                return False
+        return True
+
     def __str__(self):
         res = ''
         size = len(self.board.grid)

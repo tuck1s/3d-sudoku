@@ -20,10 +20,12 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
         #   - The possible cube variants that could fit in this position are known
         visible = state.visible[pos]
         for cv in state.cube_variants[pos]:
+            if pos < 5:
+                print('-'*pos)
             cube = cv.cube # The canonical cube being considered
             if not cube in state.used:
                 for variant in cv.variants: # The short list of variant orientations of this cube that might fit
-                    if state.is_valid(visible, variant):
+                    if state.is_valid2(visible, variant):
                         state.place_cube(visible, pos, cube, variant)
                         if solve_from_pos(pos+1):
                             return True
