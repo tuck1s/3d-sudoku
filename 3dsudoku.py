@@ -4,7 +4,7 @@
 from define_cube import CubeCollection
 from board import Board, State
 from solutions import Solutions
-import random, sys
+import random
 
 def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
 
@@ -12,12 +12,11 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
     def solve_from_pos(pos: int) -> bool:
         if pos >= len(board.strip):
             solutions.add(state)
-            return False # set to False to keep looking for other solutions
+            return
 
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
-        # For each cube position in the strip:
-        #   - The visible faces are already known
-        #   - The possible cube variants that could fit in this position are known (excluding any visible blank faces)
+        # For each cube position in the strip, the visible faces are already known
+        #   - The possible cube variants that could fit are known (excluding any visible blank faces)
         visible = state.visible[pos]
         for cv in state.cube_variants[pos]:
             cube = cv.cube # The canonical cube being considered
@@ -25,13 +24,13 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
                 for variant in cv.variants: # The short list of variant orientations of this cube that might fit
                     if state.is_valid2(visible, variant):
                         state.place_cube(visible, pos, cube, variant)
-                        if solve_from_pos(pos+1):
-                            return True
+                        solve_from_pos(pos+1)
                         state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
-        return False # Tried all cubes, nothing fits
+        return # Tried all cubes, nothing fits
 
     state = State(board, cubes)
-    return solve_from_pos(0)
+    solve_from_pos(0)
+    return solutions.total
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
 CUBE_LEN = 3
