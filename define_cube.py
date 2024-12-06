@@ -79,3 +79,13 @@ class CubeCollection:
             marks = c.nonblanks()
             self.marked_cubes[marks].add(c)
         return
+
+# A canonical cube and its arbitrary list of variants
+class CubeVariants:
+    def __init__(self, cube: Cube, variants: list[Cube]):
+        self.cube = cube
+        self.variants = variants
+
+    def __str__(self):
+        variants_str = ", ".join(map(str, self.variants))
+        return f"{self.cube}: {variants_str}"

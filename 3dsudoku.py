@@ -14,11 +14,15 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
             solutions.add(state)
             return False # set to False to keep looking for other solutions
 
-        # look for candidate pieces that have the expected number of visible faces, that are not already used. Reduce to list of int index values
-        visible = [i.value for i in board.strip[pos].sides_touched]
-        for cube in cubes.marked_cubes[len(visible)]:
+        # look for candidate pieces that have the expected number of visible faces, that are not already used.
+        # For each cube position in the strip:
+        #   - The visible faces are already known
+        #   - The possible cube variants that could fit in this position are known
+        visible = state.visible[pos]
+        for cv in state.cube_variants[pos]:
+            cube = cv.cube # The canonical cube being considered
             if not cube in state.used:
-                for variant in cube.variants():
+                for variant in cv.variants: # The short list of variant orientations of this cube that might fit
                     if state.is_valid(visible, variant):
                         state.place_cube(visible, pos, cube, variant)
                         if solve_from_pos(pos+1):
@@ -27,7 +31,7 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
                             state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
         return False # Tried all cubes, nothing fits
 
-    state = State(board)
+    state = State(board, cubes)
     return solve_from_pos(0)
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)

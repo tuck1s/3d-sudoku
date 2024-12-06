@@ -1,6 +1,6 @@
 
 from marks import Sides
-from define_cube import Cube
+from define_cube import Cube, CubeCollection, CubeVariants
 
 # A slot within the linear board (strip) representation
 class BoardSlot:
@@ -38,11 +38,26 @@ class Board:
 
 # The temporary board state as a solution is explored, each piece is indexed by strip position
 class State:
-    def __init__(self, board:Board):
+    def __init__(self, board: Board, cubes: CubeCollection):
         self.board = board
-        self.sides = [set() for _ in range(len(Sides))]
-        self.piece = [None for _ in range(len(board.strip))]
+        self.sides = [set() for _ in range(len(Sides))]  # Accumulate numbers on each "big cube" side
+        self.piece = [None] * len(board.strip)
         self.used = set()
+        self.visible = []
+        self.cube_variants = []
+
+        for slot in board.strip:
+            visible = [side.value for side in slot.sides_touched]
+            self.visible.append(visible)
+            self.cube_variants.append(self._find_valid_variants(visible, cubes))
+
+    def _find_valid_variants(self, visible, cubes):
+        cube_candidates = cubes.marked_cubes[len(visible)]
+        return [
+            CubeVariants(c, [v for v in c.variants() if self.is_valid(visible, v)])
+            for c in cube_candidates
+        ]
+
 
     # place a cube
     def place_cube(self, visible: list[int], pos:int, cube:Cube, variant:Cube):
