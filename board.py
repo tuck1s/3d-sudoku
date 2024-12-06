@@ -50,11 +50,12 @@ class State:
             visible = [side.value for side in slot.sides_touched]
             self.visible.append(visible)
             self.cube_variants.append(self._find_valid_variants(visible, cubes))
+        return
 
     def _find_valid_variants(self, visible, cubes):
         cube_candidates = cubes.marked_cubes[len(visible)]
         return [
-            CubeVariants(c, [v for v in c.variants() if self.is_valid(visible, v)])
+            CubeVariants(c, [v for v in c.variants() if self.no_visible_blanks(visible, v)])
             for c in cube_candidates
         ]
 
@@ -77,16 +78,16 @@ class State:
             self.sides[face].remove(variant.faces[face])
         return
 
-    # Is it valid to place a cube variant at this position into the board state?
     # If variant shows a blank face -> invalid
-    # If variant shows a number that is already on the corresponding "big cube" side -> invalid
-    def is_valid(self, visible:list[int], variant:Cube) -> bool:
+    def no_visible_blanks(self, visible:list[int], variant:Cube) -> bool:
         for face in visible:
-            if variant.faces[face] == 0 or variant.faces[face] in self.sides[face]:
+            if variant.faces[face] == 0:
                 return False
         return True
 
-    # Simplified validity check - we should never see a blank face
+    # Is it valid to place a cube variant at this position into the board state?
+    # - simplified: we should never see a blank face
+    # If variant shows a number that is already on the corresponding "big cube" side -> invalid
     def is_valid2(self, visible:list[int], variant:Cube) -> bool:
         for face in visible:
             if variant.faces[face] in self.sides[face]:
