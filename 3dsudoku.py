@@ -18,7 +18,10 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
         visible = state.visible[pos]
-        for cv in state.cube_variants[pos]:
+        variants_pos = state.cube_variants[pos]
+        for idx, cv in enumerate(variants_pos):
+            if pos <= 5:
+                print(f"{'-'*pos} variant {idx+1} / {len(variants_pos)}")
             cube = cv.cube # The canonical cube being considered
             if not cube in state.used:
                 for variant in cv.variants: # The short list of variant orientations of this cube that might fit
@@ -29,7 +32,15 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) ->
         return # Tried all cubes, nothing fits
 
     state = State(board, cubes)
-    solve_from_pos(0)
+    # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
+    starting_corner = state.cube_variants[0][0]
+    cube = starting_corner.cube
+    variant = starting_corner.variants[0] # just pick the first variant, solution symmetries mean all variants are equivalent
+    print(cube, variant)
+    visible = state.visible[0]
+    assert state.is_valid2(visible, variant)
+    state.place_cube(visible, 0, cube, variant)
+    solve_from_pos(1)
     return solutions.total
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
@@ -76,7 +87,7 @@ pieces = [
     [2, 0, 0, 6, 2, 0], #26=Q
 ]
 assert len(pieces) == CUBE_LEN **3
-random.shuffle(pieces) # add randomness so we get to see different starting solutions
+# random.shuffle(pieces) # add randomness so we get to see different starting solutions
 cubes = CubeCollection(pieces)
 solutions = Solutions(board)
 # Try solving the puzzle
