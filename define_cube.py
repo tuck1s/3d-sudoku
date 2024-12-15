@@ -37,38 +37,56 @@ def alternate_69(cube:Cube) -> Cube:
 
 # Return a list of up to 24 unique orientations of a cube
 def rotations(cube:Cube) -> list:
-    def add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx):
-        new_faces = (
-            cube.faces[top_idx],     # Top
-            cube.faces[bottom_idx],  # Bottom
-            cube.faces[left_idx],    # Left
-            cube.faces[right_idx],   # Right
-            cube.faces[front_idx],   # Front
-            cube.faces[back_idx]     # Back
-        )
-        face_tuple_set.add(new_faces) # create as tuple, so that duplicates are eliminated
+    def oriented_as(c: Cube, mapping):
+        """
+        Reorient the cube according to a specific face mapping.
+
+        Args:
+            c (Cube): The cube to reorient.
+            mapping (tuple[int]): Indices for the new orientation.
+
+        Returns:
+            tuple: The reoriented cube's faces in (top, bottom, left, right, front, back) order.
+        """
+        return tuple(c.faces[i] for i in mapping)
 
     # All unique orientations of the cube (up to 24)
     face_tuple_set = set()
     # Define mappings, each is an orientation of the cube with a specific face at the top:
-    # [top, bottom, left, right, front, back]
+    # [top, bottom, left, right, front, back], in each of 4 rotations around the vertical axis
     face_mappings = [
-        [0, 1, 2, 3, 4, 5],  # Top is 0
-        [1, 0, 3, 2, 4, 5],  # Top is 1
-        [2, 3, 0, 1, 5, 4],  # Top is 2
-        [3, 2, 1, 0, 5, 4],  # Top is 3
-        [4, 5, 2, 3, 1, 0],  # Top is 4
-        [5, 4, 3, 2, 1, 0]   # Top is 5
+        (0, 1, 2, 3, 4, 5), # Top is 0, rotation 0
+        (0, 1, 4, 5, 3, 2), # Top is 0, rotation 1
+        (0, 1, 3, 2, 5, 4), # Top is 0, rotation 2
+        (0, 1, 5, 4, 2, 3), # Top is 0, rotation 3
+        (1, 0, 3, 2, 4, 5), # Top is 1, rotation 0
+        (1, 0, 4, 5, 2, 3), # Top is 1, rotation 1
+        (1, 0, 2, 3, 5, 4), # Top is 1, rotation 2
+        (1, 0, 5, 4, 3, 2), # Top is 1, rotation 3
+        (2, 3, 0, 1, 5, 4), # Top is 2, rotation 0
+        (2, 3, 5, 4, 1, 0), # Top is 2, rotation 1
+        (2, 3, 1, 0, 4, 5), # Top is 2, rotation 2
+        (2, 3, 4, 5, 0, 1), # Top is 2, rotation 3
+        (3, 2, 1, 0, 5, 4), # Top is 3, rotation 0
+        (3, 2, 5, 4, 0, 1), # Top is 3, rotation 1
+        (3, 2, 0, 1, 4, 5), # Top is 3, rotation 2
+        (3, 2, 4, 5, 1, 0), # Top is 3, rotation 3
+        (4, 5, 2, 3, 1, 0), # Top is 4, rotation 0
+        (4, 5, 1, 0, 3, 2), # Top is 4, rotation 1
+        (4, 5, 3, 2, 0, 1), # Top is 4, rotation 2
+        (4, 5, 0, 1, 2, 3), # Top is 4, rotation 3
+        (5, 4, 3, 2, 1, 0), # Top is 5, rotation 0
+        (5, 4, 1, 0, 2, 3), # Top is 5, rotation 1
+        (5, 4, 2, 3, 0, 1), # Top is 5, rotation 2
+        (5, 4, 0, 1, 3, 2), # Top is 5, rotation 3
     ]
-    for top in range(len(face_mappings)):
-        # Expand the mappings
-        top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx = face_mappings[top]
-        for _ in range(4):
-            add_pos(top_idx, bottom_idx, left_idx, right_idx, front_idx, back_idx)
-            # Rotate around the vertical axis (top and bottom faces kept constant) to generate 4 orientations
-            left_idx, front_idx, right_idx, back_idx = front_idx, right_idx, back_idx, left_idx
-    return [Cube(c) for c in face_tuple_set]
+    # Generate unique orientations as tuples
+    unique_orientations = {
+        oriented_as(cube, mapping) for mapping in face_mappings
+    }
 
+    # Return Cube objects for each unique orientation
+    return [Cube(faces) for faces in unique_orientations]
 
 # There is always one cube completely blank. Each cube can have variants due to 6 / 9 and different rotations
 class CubeCollection:
