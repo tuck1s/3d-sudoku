@@ -3,45 +3,47 @@
 # Import the Cube class and the cubes list from the cubes_definition file
 from define_cube import CubeCollection
 from board import Board, State
-from solutions import Solutions
-import random
+import time
 
-def solve_sudoku_3d(board: Board, cubes: CubeCollection, solutions:Solutions) -> bool:
+def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
     def solve_from_pos(pos: int) -> bool:
         if pos >= len(board.strip):
-            solutions.add(state)
-            return
+            #print(state) # print the solution
+            return 1
 
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
         visible = state.visible[pos]
         variants_pos = state.cube_variants[pos]
-        for idx, cv in enumerate(variants_pos):
-            if pos <= 5:
-                print(f"{'-'*pos} variant {idx+1} / {len(variants_pos)}")
+        sols = 0            # number of solutions seen at this depth
+
+        for cv in variants_pos:
             cube = cv.cube # The canonical cube being considered
             if not cube in state.used:
                 for variant in cv.variants: # The short list of variant orientations of this cube that might fit
                     if state.is_valid2(visible, variant):
                         state.place_cube(visible, pos, cube, variant)
-                        solve_from_pos(pos+1)
+                        sols += solve_from_pos(pos+1)
                         state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
-        return # Tried all cubes, nothing fits
+        if pos <= 8:
+            elapsed_time = time.perf_counter() - start_time
+            print(f"{'-'*pos} {elapsed_time:.3f}s\t {sols:,} solutions")
+        return sols
 
     state = State(board, cubes)
     # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
     starting_corner = state.cube_variants[0][0]
     cube = starting_corner.cube
     variant = starting_corner.variants[0] # just pick the first variant, solution symmetries mean all variants are equivalent
-    print(cube, variant)
+    # print(cube, variant)
     visible = state.visible[0]
     assert state.is_valid2(visible, variant)
     state.place_cube(visible, 0, cube, variant)
-    solve_from_pos(1)
-    return solutions.total
+    start_time = time.perf_counter()
+    return solve_from_pos(1)
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
 CUBE_LEN = 3
@@ -89,7 +91,6 @@ pieces = [
 assert len(pieces) == CUBE_LEN **3
 # random.shuffle(pieces) # add randomness so we get to see different starting solutions
 cubes = CubeCollection(pieces)
-solutions = Solutions(board)
 # Try solving the puzzle
-solve_sudoku_3d(board, cubes, solutions)
-print(f'Solutions found: {solutions.total}')
+sols = solve_sudoku_3d(board, cubes)
+print(f'Solutions found: {sols}')

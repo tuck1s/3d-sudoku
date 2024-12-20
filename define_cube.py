@@ -1,4 +1,5 @@
 from marks import Marks, Sides
+from ordered_set import OrderedSet
 
 class Cube:
     def __init__(self, faces):
@@ -91,7 +92,7 @@ def rotations(cube:Cube) -> list:
 # There is always one cube completely blank. Each cube can have variants due to 6 / 9 and different rotations
 class CubeCollection:
     def __init__(self, faces:list):
-        self.marked_cubes = [ set() for _ in range(len(Marks))]
+        self.marked_cubes = [ OrderedSet() for _ in range(len(Marks))]
         for v in faces:
             c = Cube(v)
             marks = c.nonblanks()
