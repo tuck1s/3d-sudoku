@@ -106,5 +106,5 @@ class CubeVariants:
         self.variants = variants
 
     def __str__(self):
-        variants_str = ", ".join(map(str, self.variants))
-        return f"{self.cube}: {variants_str}"
+        variants_str = " , ".join(map(str, self.variants))
+        return f"{self.cube}: [{variants_str}]"

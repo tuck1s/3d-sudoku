@@ -27,10 +27,10 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
                     if state.is_valid2(visible, variant):
                         state.place_cube(visible, pos, cube, variant)
                         sols += solve_from_pos(pos+1)
+                        if pos <= 8:
+                            elapsed_time = time.perf_counter() - start_time
+                            print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
                         state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
-        if pos <= 8:
-            elapsed_time = time.perf_counter() - start_time
-            print(f"{'-'*pos} {elapsed_time:.3f}s\t {sols:,} solutions")
         return sols
 
     state = State(board, cubes)
