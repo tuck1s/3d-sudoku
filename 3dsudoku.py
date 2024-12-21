@@ -9,11 +9,11 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
     def solve_from_pos(pos: int) -> bool:
-        nonlocal first_sol
+        #nonlocal first_sol
         if pos >= depth: # len(board.strip)
-            if first_sol:
-                print(state) # print the solution
-                first_sol = False
+            #if first_sol:
+            #    print(state) # print the solution
+            #    first_sol = False
             return 1
 
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
@@ -32,28 +32,27 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
                         sols += solve_from_pos(pos+1)
                         if pos <= 8:
                             elapsed_time = time.perf_counter() - start_time
-                            # print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
+                            print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
                         state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
         return sols
 
     start_time = time.perf_counter()
 
-    for depth in range(2, 10):
-        state = State(board, cubes)
-        # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
-        starting_corner = state.cube_variants[0][0]
-        cube = starting_corner.cube
-        variant = starting_corner.variants[0] # just pick the first variant, solution symmetries mean all variants are equivalent
-        # print(cube, variant)
-        visible = state.visible[0]
-        assert state.is_valid2(visible, variant)
-        state.place_cube(visible, 0, cube, variant)
-        first_sol = True
-        sols = solve_from_pos(1)
-        print(f'Depth {depth}: Solutions found: {sols:,}')
+    depth = len(board.strip)
+    #first_sol = True
+    state = State(board, cubes)
+    # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
+    starting_corner = state.cube_variants[0][0]
+    cube = starting_corner.cube
+    variant = starting_corner.variants[0] # just pick the first variant, solution symmetries mean all variants are equivalent
+    # print(cube, variant)
+    visible = state.visible[0]
+    assert state.is_valid2(visible, variant)
+    state.place_cube(visible, 0, cube, variant)
+    sols = solve_from_pos(1)
     return sols
 
-# Create an empty nxnxn board, where each cell starts with a default cube (empty)
+# Create an empty n x n x n board, where each cell starts with a default cube (empty)
 CUBE_LEN = 3
 board = Board(CUBE_LEN)
 
