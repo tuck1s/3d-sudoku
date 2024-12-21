@@ -2,9 +2,11 @@ from marks import Marks, Sides
 from ordered_set import OrderedSet
 
 class Cube:
-    def __init__(self, faces):
+    def __init__(self, faces:list, id:int):
         assert len(faces) == 6
+        assert id <= 26
         self.faces = faces  # A list with six numbers, 0 if face is blank
+        self.id = id
 
     def __getitem__(self, side: Sides):
         return self.faces[side.value]
@@ -30,7 +32,7 @@ class Cube:
 def alternate_69(cube:Cube) -> Cube:
     swap = [0, 1, 2, 3, 4, 5, 9, 7, 8, 6]
     alt = list(map(lambda face: swap[face], cube.faces))
-    return Cube(alt)
+    return Cube(alt, cube.id)
 
 # Return a list of up to 24 unique orientations of a cube
 def rotations(cube:Cube) -> list:
@@ -47,8 +49,6 @@ def rotations(cube:Cube) -> list:
         """
         return tuple(c.faces[i] for i in mapping)
 
-    # All unique orientations of the cube (up to 24)
-    face_tuple_set = set()
     # Define mappings, each is an orientation of the cube with a specific face at the top:
     # [top, bottom, left, right, front, back], in each of 4 rotations around the vertical axis
     face_mappings = [
@@ -83,24 +83,28 @@ def rotations(cube:Cube) -> list:
     }
 
     # Return Cube objects for each unique orientation
-    return [Cube(faces) for faces in unique_orientations]
+    return [Cube(faces, cube.id) for faces in unique_orientations]
 
 # There is always one cube completely blank. Each cube can have variants due to 6 / 9 and different rotations
 class CubeCollection:
-    def __init__(self, faces:list):
-        self.marked_cubes = [ OrderedSet() for _ in range(len(Marks))]
-        for v in faces:
-            c = Cube(v)
+    def __init__(self, f_list:list):
+        self.marked_cubes = [OrderedSet() for _ in range(len(Marks))]
+        for id, faces in enumerate(f_list):
+            c = Cube(faces, id)
             marks = c.nonblanks()
             self.marked_cubes[marks].add(c)
         return
 
+    def __iter__(self):
+        for cubes_set in self.marked_cubes:
+            yield from cubes_set  # Yield each cube from the OrderedSet
+
 # A canonical cube and its arbitrary list of variants
 class CubeVariants:
     def __init__(self, cube: Cube, variants: list[Cube]):
-        self.cube = cube
+        self.cube_id = cube.id
         self.variants = variants
 
     def __str__(self):
         variants_str = " , ".join(map(str, self.variants))
-        return f"{self.cube}: [{variants_str}]"
+        return f"{self.cube.id}: [{variants_str}]"
