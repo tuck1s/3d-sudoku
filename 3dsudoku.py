@@ -9,43 +9,40 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
     def solve_from_pos(pos: int) -> bool:
-        if pos >= depth: # len(board.strip)
-            print(state) # print the solution
+        if pos >= depth:
+            # print(state) # print the solution
             return 1
 
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
         visible = state.visible[pos]
-        variants_pos = state.cube_variants[pos]
-        sols = 0            # number of solutions seen at this depth
-
-        for cv in variants_pos:
-            cube_id = cv.cube_id # The canonical cube being considered
-            if not cube_id in state.used:
-                for variant in cv.variants: # The short list of variant orientations of this cube that might fit
-                    if state.is_valid2(visible, variant):
-                        state.place_cube(visible, pos, cube_id, variant)
-                        sols += solve_from_pos(pos+1)
-                        if pos <= 8:
-                            elapsed_time = time.perf_counter() - start_time
-                            print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
-                        state.unplace_cube(visible, pos, cube_id, variant) # Remove the face marks accruing from this
+        variants_pos = state.slot_cube_variants[pos]
+        sols = 0 # number of solutions seen at this depth
+        avail_ids = variants_pos.ids & state.available # Use set intersection to give a shortlist
+        for cube_id in avail_ids: # The canonical cube being considered
+            for variant in variants_pos.variants[cube_id]:  # The short list of variant orientations of this cube that might fit
+                if state.is_valid2(visible, variant):
+                    state.place_cube(visible, pos, cube_id, variant)
+                    sols += solve_from_pos(pos+1)
+                    if pos <= 8:
+                        elapsed_time = time.perf_counter() - start_time
+                        print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
+                    state.unplace_cube(visible, pos, cube_id, variant) # Remove the face marks accruing from this
         return sols
 
     start_time = time.perf_counter()
 
     depth = len(board.strip)
-    #first_sol = True
     state = State(board, cubes)
     # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
-    starting_corner = state.cube_variants[0][0]
-    cube_id = starting_corner.cube_id
-    variant = starting_corner.variants[0] # just pick the first variant, solution symmetries mean all variants are equivalent
-    # print(cube, variant)
+    #FIXME: derive the first corner cube ID
+    starting_corner = state.slot_cube_variants[0]
+    v_list = list(starting_corner.ids)[0] # just pick the first variant, solution symmetries mean all variants are equivalent
+    variant = starting_corner.variants[v_list][0]
     visible = state.visible[0]
     assert state.is_valid2(visible, variant)
-    state.place_cube(visible, 0, cube_id, variant)
+    state.place_cube(visible, 0, variant.id, variant)
     sols = solve_from_pos(1)
     return sols
 

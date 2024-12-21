@@ -1,6 +1,6 @@
 
 from marks import Sides
-from define_cube import Cube, CubeCollection, CubeVariants
+from define_cube import Cube, CubeCollection
 
 # A slot within the linear board (strip) representation
 class BoardSlot:
@@ -36,17 +36,29 @@ class Board:
         return
 
 
+# A canonical cube and its arbitrary list of variants. The possible ids are tracked in a set for ease of filtering
+class SlotVariants:
+    def __init__(self):
+        self.variants = {}
+        self.ids = set()
+
+    def add(self, cube, v_list):
+        assert not cube.id in self.ids
+        self.variants[cube.id] = v_list
+        self.ids.add(cube.id)
+
 # The temporary board state as a solution is explored, each piece is indexed by strip position
 class State:
     def __init__(self, board: Board, cubes: CubeCollection):
         self.board = board
         self.sides = [set() for _ in range(len(Sides))]  # Accumulate numbers on each "big cube" side
         self.piece = [None] * len(board.strip)
-        self.used = set()
-        self.available= set()
+        # self.used = set()
+        self.available = set()
         self.visible = [[side.value for side in slot.sides_touched] for slot in board.strip]
-        self.cube_variants = [[] for _ in board.strip]
+        self.slot_cube_variants = [SlotVariants() for _ in board.strip]
 
+        # Add all cube variants into the slot states
         for marks, c_list in enumerate(cubes.marked_cubes):
             for c in c_list:
                 self.available.add(c.id) # Add the canonical cube to the "available" list
@@ -58,14 +70,12 @@ class State:
                             if self.no_visible_blanks(self.visible[i], v):
                                 valid_variants.add(v)
                         # Got cube and variants to append
-                        self.cube_variants[i].append(CubeVariants(c, list(valid_variants)))
+                        self.slot_cube_variants[i].add(c, list(valid_variants))
         return
 
     # place a cube
     def place_cube(self, visible: list[int], pos:int, cube_id:int, variant:Cube):
-        self.used.add(cube_id) # use the canonical cube
         self.available.remove(cube_id)
-        assert self.used.isdisjoint(self.available)
         self.piece[pos] = variant
         # Add the marked faces to the corresponding board sides
         for face in visible:
@@ -74,9 +84,7 @@ class State:
 
     # unplace a cube when backtracking
     def unplace_cube(self, visible:list[int], pos:int, cube_id:int, variant:Cube):
-        self.used.remove(cube_id)  # remove the canonical cube
         self.available.add(cube_id)
-        assert self.used.isdisjoint(self.available)
         self.piece[pos] = None
         # Remove the marked faces of the corresponding board sides
         for face in visible:

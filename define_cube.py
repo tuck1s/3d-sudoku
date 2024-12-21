@@ -1,4 +1,4 @@
-from marks import Marks, Sides
+from marks import Marks
 from ordered_set import OrderedSet
 
 class Cube:
@@ -7,9 +7,6 @@ class Cube:
         assert id <= 26
         self.faces = faces  # A list with six numbers, 0 if face is blank
         self.id = id
-
-    def __getitem__(self, side: Sides):
-        return self.faces[side.value]
 
     # Count the number of nonblank faces
     def nonblanks(self):
@@ -98,13 +95,3 @@ class CubeCollection:
     def __iter__(self):
         for cubes_set in self.marked_cubes:
             yield from cubes_set  # Yield each cube from the OrderedSet
-
-# A canonical cube and its arbitrary list of variants
-class CubeVariants:
-    def __init__(self, cube: Cube, variants: list[Cube]):
-        self.cube_id = cube.id
-        self.variants = variants
-
-    def __str__(self):
-        variants_str = " , ".join(map(str, self.variants))
-        return f"{self.cube.id}: [{variants_str}]"
