@@ -12,7 +12,6 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
         if pos >= depth:
             # print(state) # print the solution
             return 1
-
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
@@ -24,10 +23,31 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
             for variant in variants_pos.variants[cube_id]:  # The short list of variant orientations of this cube that might fit
                 if state.is_valid2(visible, variant):
                     state.place_cube(visible, pos, cube_id, variant)
-                    sols += solve_from_pos(pos+1)
                     if pos <= 8:
+                        sols += solve_from_pos(pos+1)
                         elapsed_time = time.perf_counter() - start_time
                         print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
+                    else:
+                        sols += solve_from_pos_deep(pos+1) # no printing etc
+                    state.unplace_cube(visible, pos, cube_id, variant) # Remove the face marks accruing from this
+        return sols
+
+    def solve_from_pos_deep(pos: int) -> bool:
+        if pos >= depth:
+            # print(state) # print the solution
+            return 1
+        # look for candidate pieces that have the expected number of visible faces, that are not already used.
+        # For each cube position in the strip, the visible faces are already known
+        #   - The possible cube variants that could fit are known (excluding any visible blank faces)
+        visible = state.visible[pos]
+        variants_pos = state.slot_cube_variants[pos]
+        sols = 0 # number of solutions seen at this depth
+        avail_ids = variants_pos.ids & state.available # Use set intersection to give a shortlist
+        for cube_id in avail_ids: # The canonical cube being considered
+            for variant in variants_pos.variants[cube_id]:  # The short list of variant orientations of this cube that might fit
+                if state.is_valid2(visible, variant):
+                    state.place_cube(visible, pos, cube_id, variant)
+                    sols += solve_from_pos_deep(pos+1) # no printing etc
                     state.unplace_cube(visible, pos, cube_id, variant) # Remove the face marks accruing from this
         return sols
 
