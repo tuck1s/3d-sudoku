@@ -9,9 +9,6 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
     def solve_from_pos(pos: int) -> bool:
-        if pos >= depth:
-            # print(state) # print the solution
-            return 1
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
@@ -58,11 +55,11 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
     # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
     #FIXME: derive the first corner cube ID
     starting_corner = state.slot_cube_variants[0]
-    v_list = list(starting_corner.ids)[0] # just pick the first variant, solution symmetries mean all variants are equivalent
-    variant = starting_corner.variants[v_list][0]
+    cube_id = list(starting_corner.ids)[0] # just pick the first, solution symmetries mean all variants are equivalent
+    variant = starting_corner.variants[cube_id][0]
     visible = state.visible[0]
     assert state.is_valid2(visible, variant)
-    state.place_cube(visible, 0, variant.id, variant)
+    state.place_cube(visible, 0, cube_id, variant)
     sols = solve_from_pos(1)
     return sols
 
