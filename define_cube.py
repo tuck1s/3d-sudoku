@@ -5,7 +5,6 @@ class Cube:
     def __init__(self, faces):
         assert len(faces) == 6
         self.faces = faces  # A list with six numbers, 0 if face is blank
-        self.variants_cache = [] # Expand on-demand
 
     def __getitem__(self, side: Sides):
         return self.faces[side.value]
@@ -18,16 +17,13 @@ class Cube:
         faces_str = ' '.join(str(face) if face >0 else '-' for face in self.faces)
         return f'{faces_str}'
 
-    # Variants are created once, cached and returned
+    # Variants no longer need to be cached, as are used from slots
     def variants(self):
-        if self.variants_cache:
-            return self.variants_cache
-        else:
-            self.variants_cache = rotations(self)
-            alt = alternate_69(self)
-            if alt.faces != self.faces:
-                self.variants_cache.extend(rotations(alt))
-            return self.variants_cache
+        v = rotations(self)
+        alt = alternate_69(self)
+        if alt.faces != self.faces:
+            v.extend(rotations(alt))
+        return v
 
 
 # Return an alternative cube due to 6 / 9 ambiguity

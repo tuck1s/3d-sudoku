@@ -9,8 +9,8 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
     def solve_from_pos(pos: int) -> bool:
-        if pos >= len(board.strip):
-            #print(state) # print the solution
+        if pos >= depth: # len(board.strip)
+            print(state) # print the solution
             return 1
 
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
@@ -29,7 +29,7 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
                         sols += solve_from_pos(pos+1)
                         if pos <= 8:
                             elapsed_time = time.perf_counter() - start_time
-                            print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
+                            # print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
                         state.unplace_cube(visible, pos, cube, variant) # Remove the face marks accruing from this
         return sols
 
@@ -43,6 +43,23 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
     assert state.is_valid2(visible, variant)
     state.place_cube(visible, 0, cube, variant)
     start_time = time.perf_counter()
+
+    prod = 1
+    for pos in range(1, 9):
+        comb = 0
+        variants_pos = state.cube_variants[pos]
+        for cv in variants_pos:
+            cube = cv.cube # The canonical cube being considered
+            if not cube in state.used:
+                # print(f'{pos}: cube {cv.cube}: {len(cv.variants)}') # The short list of variant orientations of this cube that might fit
+                comb += len(cv.variants)
+        print("===", pos, ",", comb)
+        prod = prod * comb
+    print(f'First layer raw combinations: {prod:,}')
+
+    for depth in range(2, 9):
+        
+
     return solve_from_pos(1)
 
 # Create an empty nxnxn board, where each cell starts with a default cube (empty)
@@ -93,4 +110,4 @@ assert len(pieces) == CUBE_LEN **3
 cubes = CubeCollection(pieces)
 # Try solving the puzzle
 sols = solve_sudoku_3d(board, cubes)
-print(f'Solutions found: {sols}')
+print(f'Solutions found: {sols:,}')
