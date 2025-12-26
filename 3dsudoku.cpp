@@ -459,7 +459,7 @@ int solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::
 
 int main(int argc, char* argv[]) {
     int hint_cube_id = -1;
-    
+
     // Parse command-line arguments
     if (argc > 1) {
         hint_cube_id = std::atoi(argv[1]);
@@ -468,7 +468,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    
+
     const int CUBE_LEN = 3;
     Board board(CUBE_LEN);
 
