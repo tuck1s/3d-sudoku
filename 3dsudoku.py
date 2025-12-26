@@ -53,7 +53,6 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
     depth = len(board.strip)
     state = State(board, cubes)
     # Slot 0: force the first corner to always be the first piece (as solution symmetries mean there are 8x3x equivalent solutions)
-    #FIXME: derive the first corner cube ID
     starting_corner = state.slot_cube_variants[0]
     cube_id = list(starting_corner.ids)[0] # just pick the first, solution symmetries mean all variants are equivalent
     variant = starting_corner.variants[cube_id][0]
