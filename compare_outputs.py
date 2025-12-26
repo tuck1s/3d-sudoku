@@ -31,7 +31,7 @@ def parse_line_generator(filename):
     try:
         with open(filename, 'r') as f:
             for line in f:
-                if line.strip():
+                if line.strip() and not line.startswith('Hint:'):
                     yield parse_line(line)
     except FileNotFoundError:
         print(f"Error: {filename} not found")
@@ -41,7 +41,7 @@ def count_lines(filename):
     """Count lines in a file without loading into memory."""
     try:
         with open(filename, 'r') as f:
-            return sum(1 for line in f if line.strip())
+            return sum(1 for line in f if line.strip() and not line.startswith('Hint:'))
     except FileNotFoundError:
         return 0
 
@@ -58,7 +58,7 @@ def main():
     # Count lines for reporting
     count1 = count_lines(args.file1)
     count2 = count_lines(args.file2)
-    
+
     print(f"{args.file1}: {count1} lines")
     print(f"{args.file2}: {count2} lines")
     print()
@@ -90,12 +90,12 @@ def main():
                 match_symbol = "✓" if (parsed1['dashcount'] == parsed2['dashcount'] and
                                        parsed1['with_part'] == parsed2['with_part'] and
                                        parsed1['solution_count'] == parsed2['solution_count']) else "✗"
-                
+
                 # Calculate speed factor (cpp seconds / python seconds)
                 time1 = float(parsed1['seconds'].rstrip('s'))
                 time2 = float(parsed2['seconds'].rstrip('s'))
                 speed_factor = time1 / time2 if time2 > 0 else 0
-                
+
                 print(f"{match_symbol} {'-' * parsed1['dashcount']} {parsed1['with_part']} {parsed1['solution_count']} | {'-' * parsed2['dashcount']} {parsed2['with_part']} {parsed2['solution_count']} | {speed_factor:.2f}x")
 
             # Compare ignoring seconds
