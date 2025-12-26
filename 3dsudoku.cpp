@@ -4,6 +4,8 @@
 #include <cassert>
 #include <chrono>
 #include <iomanip>
+#include <cstring>
+#include <locale>
 
 // Sides enum
 enum Sides {
@@ -276,19 +278,21 @@ public:
         }
     }
 
-    void place_cube(const std::vector<int>& vis, int pos, int cube_id, const Cube& variant) {
+    inline void place_cube(const std::vector<int>& vis, int pos, int cube_id, const Cube& variant) {
         bitmask_remove(available, cube_id);
         piece[pos] = variant;
+        const int* faces = variant.faces.data();
         for (int face : vis) {
-            bitmask_add(sides[face], variant.faces[face]);
+            bitmask_add(sides[face], faces[face]);
         }
     }
 
-    void unplace_cube(const std::vector<int>& vis, int pos, int cube_id, const Cube& variant) {
+    inline void unplace_cube(const std::vector<int>& vis, int pos, int cube_id, const Cube& variant) {
         bitmask_add(available, cube_id);
         piece[pos] = Cube();
+        const int* faces = variant.faces.data();
         for (int face : vis) {
-            bitmask_remove(sides[face], variant.faces[face]);
+            bitmask_remove(sides[face], faces[face]);
         }
     }
 
@@ -301,9 +305,10 @@ public:
         return true;
     }
 
-    bool is_valid2(const std::vector<int>& vis, const Cube& variant) const {
+    inline bool is_valid2(const std::vector<int>& vis, const Cube& variant) const {
+        const int* faces = variant.faces.data();
         for (int face : vis) {
-            if (bitmask_contains(sides[face], variant.faces[face])) {
+            if (bitmask_contains(sides[face], faces[face])) {
                 return false;
             }
         }
@@ -340,14 +345,15 @@ int solve_from_pos(int pos) {
     SlotVariants& variants_pos = g_state->slot_cube_variants[pos];
     int sols = 0;
 
-    uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
+    const uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
 
     // Iterate through set bits
     for (uint64_t mask = avail_ids; mask != 0; ) {
-        int cube_id = bitmask_first(mask);
+        const int cube_id = bitmask_first(mask);
         mask &= mask - 1; // Clear lowest set bit
 
-        for (const Cube& variant : variants_pos.variants[cube_id]) {
+        const std::vector<Cube>& cube_variants = variants_pos.variants[cube_id];
+        for (const Cube& variant : cube_variants) {
             if (g_state->is_valid2(visible, variant)) {
                 g_state->place_cube(visible, pos, cube_id, variant);
 
@@ -357,7 +363,11 @@ int solve_from_pos(int pos) {
                     auto elapsed_sec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / 1000.0;
                     std::cout << std::string(pos, '-') << " with " << variant.to_string()
                               << "\t" << std::fixed << std::setprecision(3) << elapsed_sec
-                              << "s\t " << sols << " solutions" << std::endl;
+                              << "s\t ";
+                    std::cout.imbue(std::locale(""));
+                    std::cout << sols;
+                    std::cout.imbue(std::locale::classic());
+                    std::cout << " solutions" << std::endl;
                 } else {
                     sols += solve_from_pos_deep(pos + 1);
                 }
@@ -371,7 +381,7 @@ int solve_from_pos(int pos) {
 }
 
 int solve_from_pos_deep(int pos) {
-    if (pos >= g_depth) {
+    if (pos >= g_depth) [[unlikely]] {
         // std::cout << g_state->to_string() << std::endl; // Print solution
         return 1;
     }
@@ -380,14 +390,15 @@ int solve_from_pos_deep(int pos) {
     SlotVariants& variants_pos = g_state->slot_cube_variants[pos];
     int sols = 0;
 
-    uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
+    const uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
 
     for (uint64_t mask = avail_ids; mask != 0; ) {
-        int cube_id = bitmask_first(mask);
+        const int cube_id = bitmask_first(mask);
         mask &= mask - 1;
 
-        for (const Cube& variant : variants_pos.variants[cube_id]) {
-            if (g_state->is_valid2(visible, variant)) {
+        const std::vector<Cube>& cube_variants = variants_pos.variants[cube_id];
+        for (const Cube& variant : cube_variants) {
+            if (g_state->is_valid2(visible, variant)) [[likely]] {
                 g_state->place_cube(visible, pos, cube_id, variant);
                 sols += solve_from_pos_deep(pos + 1);
                 g_state->unplace_cube(visible, pos, cube_id, variant);
