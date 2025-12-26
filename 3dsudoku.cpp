@@ -409,7 +409,7 @@ int solve_from_pos_deep(int pos) {
     return sols;
 }
 
-int solve_sudoku_3d(Board* board, CubeCollection* cubes) {
+int solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::array<int, 6>>& pieces_def, int hint_cube_id = -1) {
     g_start_time = std::chrono::high_resolution_clock::now();
     g_depth = board->strip.size();
 
@@ -425,11 +425,50 @@ int solve_sudoku_3d(Board* board, CubeCollection* cubes) {
     assert(state.is_valid2(visible, variant));
     state.place_cube(visible, 0, cube_id, variant);
 
+    // If hint_cube_id is provided, place it at position 1 and start from position 2
+    if (hint_cube_id >= 0) {
+        const std::vector<int>& visible1 = state.visible[1];
+        SlotVariants& variants_pos1 = state.slot_cube_variants[1];
+
+        if (bitmask_contains(variants_pos1.ids, hint_cube_id) && bitmask_contains(state.available, hint_cube_id)) {
+            const std::vector<Cube>& cube_variants = variants_pos1.variants[hint_cube_id];
+
+            // Find first valid variant
+            for (const Cube& v : cube_variants) {
+                if (state.is_valid2(visible1, v)) {
+                    state.place_cube(visible1, 1, hint_cube_id, v);
+                    std::cout << "Hint: initial corner cube pos[0]" << state.piece[0].to_string() << " pos[1]=" << v.to_string() << std::endl;
+                    int sols = solve_from_pos(2);
+                    return sols;
+                }
+            }
+
+            // All variants conflict
+            Cube original_hint(pieces_def[hint_cube_id], hint_cube_id);
+            std::cerr << "Conflict: initial corner cube pos[0]=" << state.piece[0].to_string() << " conflicts with hint cube #" << hint_cube_id << " (" << original_hint.to_string() << ")" << std::endl;
+            return 0;
+        } else {
+            std::cerr << "Warning: Hint cube #" << hint_cube_id << " is not valid for position 1" << std::endl;
+            return 0;
+        }
+    }
+
     int sols = solve_from_pos(1);
     return sols;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    int hint_cube_id = -1;
+    
+    // Parse command-line arguments
+    if (argc > 1) {
+        hint_cube_id = std::atoi(argv[1]);
+        if (hint_cube_id < 0 || hint_cube_id > 26) {
+            std::cerr << "Invalid cube ID. Must be between 0 and 26." << std::endl;
+            return 1;
+        }
+    }
+    
     const int CUBE_LEN = 3;
     Board board(CUBE_LEN);
 
@@ -476,7 +515,7 @@ int main() {
 
     CubeCollection cubes(pieces);
 
-    int sols = solve_sudoku_3d(&board, &cubes);
+    int sols = solve_sudoku_3d(&board, &cubes, pieces, hint_cube_id);
     std::cout << "Solutions found: " << sols << std::endl;
 
     return 0;
