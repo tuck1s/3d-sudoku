@@ -337,13 +337,13 @@ int g_depth = 0;
 auto g_start_time = std::chrono::high_resolution_clock::now();
 
 // Forward declarations
-int solve_from_pos(int pos);
-int solve_from_pos_deep(int pos);
+uint64_t solve_from_pos(int pos);
+uint64_t solve_from_pos_deep(int pos);
 
-int solve_from_pos(int pos) {
+uint64_t solve_from_pos(int pos) {
     const std::vector<int>& visible = g_state->visible[pos];
     SlotVariants& variants_pos = g_state->slot_cube_variants[pos];
-    int sols = 0;
+    uint64_t sols = 0;
 
     const uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
 
@@ -380,15 +380,15 @@ int solve_from_pos(int pos) {
     return sols;
 }
 
-int solve_from_pos_deep(int pos) {
-    if (pos >= g_depth) [[unlikely]] {
+uint64_t solve_from_pos_deep(int pos) {
+    if (pos >= g_depth-12) [[unlikely]] {
         // std::cout << g_state->to_string() << std::endl; // Print solution
         return 1;
     }
 
     const std::vector<int>& visible = g_state->visible[pos];
     SlotVariants& variants_pos = g_state->slot_cube_variants[pos];
-    int sols = 0;
+    uint64_t sols = 0;
 
     const uint64_t avail_ids = bitmask_intersection(variants_pos.ids, g_state->available);
 
@@ -409,7 +409,7 @@ int solve_from_pos_deep(int pos) {
     return sols;
 }
 
-int solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::array<int, 6>>& pieces_def, int hint_cube_id = -1) {
+uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::array<int, 6>>& pieces_def, int hint_cube_id = -1) {
     g_start_time = std::chrono::high_resolution_clock::now();
     g_depth = board->strip.size();
 
@@ -438,7 +438,7 @@ int solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::
                 if (state.is_valid2(visible1, v)) {
                     state.place_cube(visible1, 1, hint_cube_id, v);
                     std::cout << "Hint: initial corner cube pos[0]" << state.piece[0].to_string() << " pos[1]=" << v.to_string() << std::endl;
-                    int sols = solve_from_pos(2);
+                    uint64_t sols = solve_from_pos(2);
                     return sols;
                 }
             }
@@ -453,7 +453,7 @@ int solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::
         }
     }
 
-    int sols = solve_from_pos(1);
+    uint64_t sols = solve_from_pos(1);
     return sols;
 }
 
@@ -515,7 +515,7 @@ int main(int argc, char* argv[]) {
 
     CubeCollection cubes(pieces);
 
-    int sols = solve_sudoku_3d(&board, &cubes, pieces, hint_cube_id);
+    uint64_t sols = solve_sudoku_3d(&board, &cubes, pieces, hint_cube_id);
     std::cout << "Solutions found: " << sols << std::endl;
 
     return 0;
