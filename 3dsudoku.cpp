@@ -435,20 +435,25 @@ uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<
         if (bitmask_contains(variants_pos1.ids, hint_cube_id) && bitmask_contains(state.available, hint_cube_id)) {
             const std::vector<Cube>& cube_variants = variants_pos1.variants[hint_cube_id];
 
-            // Find first valid variant
+            uint64_t sols = 0;
+            
+            // Try all valid variants and sum solutions
             for (const Cube& v : cube_variants) {
                 if (state.is_valid2(visible1, v)) {
                     state.place_cube(visible1, 1, hint_cube_id, v);
-                    std::cout << "Hint: initial corner cube pos[0]" << state.piece[0].to_string() << " pos[1]=" << v.to_string() << std::endl;
-                    uint64_t sols = solve_from_pos(2);
-                    return sols;
+                    std::cout << "Hint: initial corner cube pos[0]=" << state.piece[0].to_string() << " pos[1]=" << v.to_string() << std::endl;
+                    sols += solve_from_pos(2);
+                    state.unplace_cube(visible1, 1, hint_cube_id, v);
                 }
             }
 
-            // All variants conflict
-            Cube original_hint(pieces_def[hint_cube_id], hint_cube_id);
-            std::cerr << "Conflict: initial corner cube pos[0]=" << state.piece[0].to_string() << " conflicts with hint cube #" << hint_cube_id << " (" << original_hint.to_string() << ")" << std::endl;
-            return 0;
+            if (sols == 0) {
+                // All variants conflict
+                Cube original_hint(pieces_def[hint_cube_id], hint_cube_id);
+                std::cerr << "Conflict: initial corner cube pos[0]=" << state.piece[0].to_string() << " conflicts with hint cube #" << hint_cube_id << " (" << original_hint.to_string() << ")" << std::endl;
+            }
+            
+            return sols;
         } else {
             std::cerr << "Warning: Hint cube #" << hint_cube_id << " is not valid for position 1" << std::endl;
             return 0;
