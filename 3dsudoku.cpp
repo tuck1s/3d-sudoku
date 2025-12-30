@@ -7,6 +7,8 @@
 #include <cstring>
 #include <locale>
 
+const int DEPTH_TO_PRINT = 8;
+
 // Sides enum
 enum Sides {
     TOP = 0,
@@ -357,7 +359,7 @@ uint64_t solve_from_pos(int pos) {
             if (g_state->is_valid2(visible, variant)) {
                 g_state->place_cube(visible, pos, cube_id, variant);
 
-                if (pos <= 8) {
+                if (pos <= DEPTH_TO_PRINT) {
                     sols += solve_from_pos(pos + 1);
                     auto elapsed = std::chrono::high_resolution_clock::now() - g_start_time;
                     auto elapsed_sec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / 1000.0;
@@ -381,7 +383,7 @@ uint64_t solve_from_pos(int pos) {
 }
 
 uint64_t solve_from_pos_deep(int pos) {
-    if (pos >= g_depth-12) [[unlikely]] {
+    if (pos >= g_depth) [[unlikely]] {
         // std::cout << g_state->to_string() << std::endl; // Print solution
         return 1;
     }
