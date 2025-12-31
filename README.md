@@ -85,19 +85,33 @@ The next optimization was to use [pypy](https://pypy.org/index.html) instead of 
 
 ## Rust
 
-In late 2024, I made an AI-assisted translation into Rust. This gave only small speedup compared to pypy, probably because I'm a novice Rust programmer and was fighting against the borrow-checker.
+In late 2024, ChatGPT helped me translate the code into Rust. However, this gave only a small speedup compared to pypy, probably because I was fighting against the borrow-checker and didn't apply the right optimizations. The Rust version still used hash-based sets rather than bitmasks.
 
 ## C++
 
-In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++, with a critical optimization:
+The problem space fits perfectly into bitmask operations, instead of hash-based sets. 64 bits easily handles both 10 digits and 27 cubes.
+In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++ with this optimization.
 
 **Bitmasks (uint64_t)** - The key speedup over Python
 - Instead of Python sets, uses binary bits to track which numbers/cubes are used
-- `sides[6]`: 6 bitmasks tracking which digits appear on each face
-- `available`: bitmask of which cubes haven't been placed yet
-- Operations like "is 7 already on the top face?" become single bitwise operations (extremely fast)
-- All set membership checks are O(1) bitwise operations instead of O(n) hash table lookups
+- `sides[6]`: 6 bitmasks tracking which digits appear on each face (each storing 10 bits for digits 0-9)
+- `available`: bitmask of which cubes haven't been placed yet (27 bits for cube IDs 0-26)
+- Operations like "is 7 already on the top face?" become single CPU-level bitwise operations
+- Much faster than Python set operations due to no hashing overhead and better cache locality
 
 The pre-computed variants, state tracking, and other algorithmic optimizations remain the same as the Python prototype.
 
-The result is a highly optimized constraint satisfaction solver that can explore millions of placements per second!
+The result is an optimized constraint satisfaction solver that can explore millions of placements per second.
+
+### Parallelization Strategy
+
+The solver itself is single-threaded and will saturate a single core. However, to exploit modern multi-core CPUs (and even distribute work across multiple machines), the solver accepts a command-line argument specifying which cube to place at _position 1_ (an edge piece).
+
+```bash
+./3dsudoku 8   # Force cube #8 at position 1
+```
+
+This allows you to divide the problem space across cores or machines by running multiple instances with different hint cube IDs. ID 7 is invalid (the 1s clash) so we only need to try edge piece IDs 8-18. This needs 11 processes.
+Each process explores an independent subtree of the search space. The results can be written to different .txt files, see [do_all.sh](do_all.sh).
+
+The results can be summed to get the total solution count.
