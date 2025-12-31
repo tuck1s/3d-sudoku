@@ -115,3 +115,35 @@ This allows you to divide the problem space across cores or machines by running 
 Each process explores an independent subtree of the search space. The results can be written to different .txt files, see [do_all.sh](do_all.sh).
 
 The results can be summed to get the total solution count.
+
+Each process can be tuned after starting, with `renice` so that, for example, seven processes run with normal priority on seven cores, while the remaining 4 run more slowly (to minimize context switching).
+
+### Checking against Python code
+
+The "Christmas 2024" Python run found ~ 65 billion solutions. A [comparison script](./compare_outputs.py) allows the new run to be checked against this (for cube 8).
+
+
+```bash
+ ./compare_outputs.py out.txt ./out-cube8.txt
+Comparing out.txt vs ./out-cube8.txt
+Showing lines with dashcount <= 4
+======================================================================
+out.txt: 475956 lines
+./out-cube8.txt: 244245 lines
+
+Note: Different number of lines - comparing up to shorter length
+
+✓ ---- with - 4 - - - - 427,123,712 solutions | ---- with - 4 - - - - 427,123,712 solutions | 5.69x
+✓ ---- with - 8 - - - - 832,529,920 solutions | ---- with - 8 - - - - 832,529,920 solutions | 6.21x
+:
+: etc
+:
+======================================================================
+✓ No differences found! Outputs match.
+```
+
+This shows we haven't broken the C++ version.
+
+### Estimating run-time
+
+The [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) catalogues various runs done. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing all variants of piece[2] is taking around two days. Extrapolating from this suggests the whole run will finish in about 160 days.
