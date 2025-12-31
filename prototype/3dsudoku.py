@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 # Import the Cube class and the cubes list from the cubes_definition file
-from prototype.define_cube import CubeCollection
-from prototype.board import Board, State
+from define_cube import CubeCollection
+from board import Board, State
 import time
 
 def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:

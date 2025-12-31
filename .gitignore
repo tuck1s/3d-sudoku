@@ -1,4 +1,4 @@
 Pipfile.lock
-__pycache__/*
+prototype/__pycache__/*
 out*.txt
 3dsudoku

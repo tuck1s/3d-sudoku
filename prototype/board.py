@@ -1,6 +1,6 @@
 
-from prototype.marks import Sides
-from prototype.define_cube import Cube, CubeCollection
+from marks import Sides
+from define_cube import Cube, CubeCollection
 
 # A slot within the linear board (strip) representation
 class BoardSlot:
