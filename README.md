@@ -60,7 +60,7 @@ For each position in the 3×3×3 grid:
 ```
 
 The solver gets the first answer in a fraction of a second. At first I thought there might be a few thousand, or a few million valid solutions that could be found with reasonable runtime. There are many more than that!
- 
+
 ## [Prototype](prototype) implementation
 
 Data structures and algorithms were initially built in Python, allowing various algorithm choices to be easily explored.
@@ -89,30 +89,15 @@ In late 2024, I made an AI-assisted translation into Rust. This gave only small 
 
 ## C++
 
-In late 2025
+In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++, with a critical optimization:
 
-
-## Key Data Structures
-
-### 1. Bitmasks (uint64_t)
-- Instead of arrays/sets, uses binary bits to track which numbers/cubes are used
+**Bitmasks (uint64_t)** - The key speedup over Python
+- Instead of Python sets, uses binary bits to track which numbers/cubes are used
 - `sides[6]`: 6 bitmasks tracking which digits appear on each face
 - `available`: bitmask of which cubes haven't been placed yet
 - Operations like "is 7 already on the top face?" become single bitwise operations (extremely fast)
+- All set membership checks are O(1) bitwise operations instead of O(n) hash table lookups
 
-### 2. Pre-computed Variants (`SlotVariants`)
-- Before solving, calculates all 24 possible rotations of each cube
-- Filters out invalid orientations (e.g., cubes with blank faces on visible sides)
-- Stores only valid cube-orientation pairs for each position
-- This means during search, we never try impossible placements
-
-### 3. State
-- Tracks current placement of all cubes
-- Maintains which digits are visible on each of the 6 outer faces
-- Updates incrementally as cubes are placed/removed
-
-## Key Optimizations
-
-1. **Bitmask operations** - All set membership checks are O(1) bitwise operations instead of O(n) loops
+The pre-computed variants, state tracking, and other algorithmic optimizations remain the same as the Python prototype.
 
 The result is a highly optimized constraint satisfaction solver that can explore millions of placements per second!
