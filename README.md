@@ -31,7 +31,7 @@ Each of the 24 different rotations, and the 6/9 variants can be easily done [her
 
 ## Algorithm
 
-Finding _a_ solution was relatively quick and easy wih Python, for example:
+Finding _a_ solution was relatively quick and easy with Python, for example:
 
 ```
 - 1 3 - - 1 | - 3 - - - 2 | - 7 - 3 - 5 |
@@ -78,9 +78,9 @@ Data structures and algorithms were initially built in Python, allowing various 
 
 1. **Early termination** - The `is_valid2()` check immediately rejects placements that would create duplicate numbers
 
-1. **Two solve functions** - `solve_from_pos()` prints progress for shallow depths, `solve_from_pos_deep()` runs silently for deep recursion (avoiding I/O overhead in the tight loop)
+1. **Two solve functions** - `solve_from_pos()` prints progress for the first 8 positions, `solve_from_pos_deep()` runs silently for deeper recursion (avoiding I/O overhead in the tight inner loop)
 
-1. **Linear recursion over positions** - While the puzzle is conceptually a 3×3×3 grid, the solver recurses over a flattened 27-element array (`strip`). This provides better cache locality and simpler indexing (single integer position instead of x,y,z coordinates), making the inner loop faster.
+1. **Linear recursion over positions** - While the puzzle is conceptually a 3×3×3 grid, the solver recurses over a flattened 27-element array (`strip`). The traversal order is z→y→x (so position 0 is grid[0][0][0], position 1 is grid[1][0][0], etc.). This provides better cache locality and simpler indexing (single integer position instead of x,y,z coordinates), making the inner loop faster.
 
 ## Need for speed
 
@@ -100,7 +100,12 @@ In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++ w
 - `sides[6]`: 6 bitmasks tracking which digits appear on each face (each storing 10 bits for digits 0-9)
 - `available`: bitmask of which cubes haven't been placed yet (27 bits for cube IDs 0-26)
 - Operations like "is 7 already on the top face?" become single CPU-level bitwise operations
+- Uses CPU intrinsics (`__builtin_ctzll` for finding first set bit, `__builtin_popcountll` for counting bits) that map directly to hardware instructions
 - Much faster than Python set operations due to no hashing overhead and better cache locality
+
+**Additional C++ optimizations:**
+- Branch prediction hints (`[[likely]]` attributes) guide the compiler to optimize the most common code paths
+- Inline functions eliminate function call overhead in hot loops
 
 The pre-computed variants, state tracking, and other algorithmic optimizations remain the same as the Python prototype.
 
@@ -109,6 +114,8 @@ The result is an optimized constraint satisfaction solver that can explore milli
 ### Parallelization Strategy
 
 The solver itself is single-threaded and will saturate a single core. However, to exploit modern multi-core CPUs (and even distribute work across multiple machines), the solver accepts a command-line argument specifying which cube to place at _position 1_ (an edge piece).
+
+Note: Position 0 (grid[0][0][0], a corner) is automatically fixed to break symmetry. Position 1 (grid[1][0][0], an edge) is where we can inject different cubes to partition the problem space.
 
 ```bash
 ./3dsudoku 8   # Force cube #8 at position 1
