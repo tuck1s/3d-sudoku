@@ -88,7 +88,7 @@ The next optimization was to use [pypy](https://pypy.org/index.html) instead of 
 
 ## Rust
 
-In late 2024, ChatGPT helped me translate the code into Rust. However, this gave only a small speedup compared to pypy, probably because I was fighting against the borrow-checker and didn't apply the right optimizations. The Rust version still used hash-based sets rather than bitmasks.
+In late 2024, ChatGPT helped me translate the code into Rust. However, this gave about a ~2.5x compared to pypy, probably because I was fighting against the borrow-checker and didn't apply the right optimizations. The Rust version still used hash-based sets rather than bitmasks.
 
 ## C++
 
@@ -111,7 +111,14 @@ The pre-computed variants, state tracking, and other algorithmic optimizations r
 
 The result is an optimized constraint satisfaction solver that can explore millions of placements per second.
 
-### Parallelization Strategy
+### Build instructions
+I found `clang++` to be slightly faster than `g++` on both Apple M3 (ARM) and Linux/x64 architectures. This works for both:
+
+```bash
+clang++ -O3 -march=native -funroll-loops -fomit-frame-pointer -ffast-math -o 3dsudoku 3dsudoku.cpp
+```
+
+## Parallelization Strategy
 
 The solver itself is single-threaded and will saturate a single core. However, to exploit modern multi-core CPUs (and even distribute work across multiple machines), the solver accepts a command-line argument specifying which cube to place at _position 1_ (an edge piece).
 
@@ -128,7 +135,7 @@ The results can be summed to get the total solution count.
 
 Each process can be tuned after starting, with `renice` so that, for example, seven processes run with normal priority on seven cores, while the remaining 4 run more slowly (to minimize context switching).
 
-### Checking against Python code
+## Checking against Python code
 
 The "Christmas 2024" Python run found ~ 65 billion solutions. A [comparison script](./compare_outputs.py) allows the new run to be checked against this (for cube 8).
 
@@ -154,6 +161,6 @@ Note: Different number of lines - comparing up to shorter length
 
 This shows we haven't broken the C++ version.
 
-### Estimating run-time
+## Estimating run-time
 
 The [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) catalogues various runs done. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing all variants of piece[2] is taking around two days. Extrapolating from this suggests the whole run will finish in about 160 days.
