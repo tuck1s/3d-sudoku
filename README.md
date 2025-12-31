@@ -88,12 +88,12 @@ The next optimization was to use [pypy](https://pypy.org/index.html) instead of 
 
 ## Rust
 
-In late 2024, ChatGPT helped me translate the code into Rust. However, this gave about a ~2.5x compared to pypy, probably because I was fighting against the borrow-checker and didn't apply the right optimizations. The Rust version still used hash-based sets rather than bitmasks.
+In late 2024, ChatGPT helped me translate the code into Rust. However, this gave about a ~2.5x compared to Python, probably because I was fighting against the borrow-checker and didn't apply the right optimizations. The Rust version still used hash-based sets rather than bitmasks.
 
 ## C++
 
 The problem space fits perfectly into bitmask operations, instead of hash-based sets. 64 bits easily handles both 10 digits and 27 cubes.
-In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++ with this optimization.
+In late 2025, CoPilot (Claude Sonnet 4.5) helped translate the Python into C++ with this optimization. This gives a ~20x speedup.
 
 **Bitmasks (uint64_t)** - The key speedup over Python
 - Instead of Python sets, uses binary bits to track which numbers/cubes are used
