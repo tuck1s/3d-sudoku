@@ -1,6 +1,6 @@
 
 
-from board import Board, State
+from prototype.board import Board, State
 import sys, time
 
 # Report on solutions found

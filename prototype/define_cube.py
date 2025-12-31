@@ -1,4 +1,4 @@
-from marks import Marks
+from prototype.marks import Marks
 from ordered_set import OrderedSet
 
 class Cube:
