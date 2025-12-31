@@ -31,7 +31,7 @@ Each of the 24 different rotations, and the 6/9 variants can be easily done [her
 
 ## Algorithm
 
-Finding _a_ solution was relatively quick and easy wih Python:
+Finding _a_ solution was relatively quick and easy wih Python, for example:
 
 ```
 - 1 3 - - 1 | - 3 - - - 2 | - 7 - 3 - 5 |
@@ -46,6 +46,9 @@ Finding _a_ solution was relatively quick and easy wih Python:
 7 - 6 - - - | 8 - - - - - | 6 - - 4 - - |
 2 - 2 - 6 - | 4 - - - 7 - | 9 - - 2 1 - |
 ```
+
+This shows bottom, middle, and top layers. Each cube's faces (e.g. `- 1 3 - - 1`) show in the conventional order of
+_top, bottom, left, right, front, back_.
 
 This leads to: how many distinct solutions are there? To find all solutions, use a classic **backtracking search**:
 
