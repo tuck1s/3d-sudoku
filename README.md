@@ -137,7 +137,7 @@ Each process can be tuned after starting, with `renice` so that, for example, se
 
 ## Checking against Python code
 
-The "Christmas 2024" Python run found ~ 65 billion solutions. A [comparison script](./compare_outputs.py) allows the new run to be checked against this (for cube 8).
+The "Christmas 2024" Python run found ~ 65 billion solutions in just over ten days. A [comparison script](./compare_outputs.py) allows the new run to be checked against this (for cube 8).
 
 
 ```bash
@@ -160,6 +160,7 @@ Note: Different number of lines - comparing up to shorter length
 ```
 
 This shows we haven't broken the C++ version.
+In comparison, in 24 hours, the C++ version (11 processes) has found ~ 2.9 trillion solutions
 
 ## Estimating run-time
 
