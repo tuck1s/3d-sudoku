@@ -10,7 +10,7 @@ You have 27 small cubes, each with numbers on some faces (or blanks). You need t
 
 <img src="images/cube.jpeg" alt="The 3x3x3 puzzle" width="60%">
 
-Note that blank faces of the cubes are hidden on the inside. In other words, there is an exact number of marked, visible faces. There's:
+Note that blank faces of the cubes are hidden on the inside. In other words, there is an exact number of marked, visible faces (6x3x3 = 54). There's:
 
 * one entirely blank cube that is always in the middle
 * six centre-face cubes, each with one number marked

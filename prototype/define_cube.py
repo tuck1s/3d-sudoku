@@ -1,4 +1,4 @@
-from marks import Marks
+from marks import Marks, Sides
 from ordered_set import OrderedSet
 
 class Cube:
@@ -86,7 +86,16 @@ def rotations(cube:Cube) -> list:
 class CubeCollection:
     def __init__(self, f_list:list):
         self.marked_cubes = [OrderedSet() for _ in range(len(Marks))]
-        for id, faces in enumerate(f_list):
+
+        # Canonical positions for marked faces: top, left, front
+        canonical_positions = [Sides.top.value, Sides.left.value, Sides.front.value]
+        
+        for id, face_values in enumerate(f_list):
+            # Convert tuple to full 6-element array with canonical positioning
+            faces = [0] * 6
+            for i, val in enumerate(face_values):
+                faces[canonical_positions[i]] = val
+
             c = Cube(faces, id)
             marks = c.nonblanks()
             self.marked_cubes[marks].add(c)
