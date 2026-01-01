@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: 3dsudoku.py",
+            "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "3dsudoku.py",
-            "console": "integratedTerminal"
+            "program": "${file}",
+            "console": "integratedTerminal",
         },
         {
-            "name": "Python Debugger: Current File",
+            "name": "Python Debugger: Current File w params",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",

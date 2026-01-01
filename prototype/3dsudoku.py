@@ -5,6 +5,8 @@ from define_cube import CubeCollection
 from board import Board, State
 import time
 
+# Note hacked version that shows expected work for each of the slot[1] edge pieces
+
 def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
 
     # Search for cubes that fit a specific slot position
@@ -12,6 +14,11 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
         # look for candidate pieces that have the expected number of visible faces, that are not already used.
         # For each cube position in the strip, the visible faces are already known
         #   - The possible cube variants that could fit are known (excluding any visible blank faces)
+        if pos >= stop_depth:
+            #debug = str(state).split('\n')
+            #print('\t\t' + debug[0] + '\t' + debug[1]) # truncated debug
+            # print the solution
+            return 1
         visible = state.visible[pos]
         variants_pos = state.slot_cube_variants[pos]
         sols = 0 # number of solutions seen at this depth
@@ -23,7 +30,7 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
                     if pos <= 8:
                         sols += solve_from_pos(pos+1)
                         elapsed_time = time.perf_counter() - start_time
-                        print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
+                        # print(f"{'-'*pos} with {variant}\t{elapsed_time:.3f}s\t {sols:,} solutions")
                     else:
                         sols += solve_from_pos_deep(pos+1) # no printing etc
                     state.unplace_cube(visible, pos, cube_id, variant) # Remove the face marks accruing from this
@@ -59,7 +66,29 @@ def solve_sudoku_3d(board: Board, cubes: CubeCollection) -> int:
     visible = state.visible[0]
     assert state.is_valid2(visible, variant)
     state.place_cube(visible, 0, cube_id, variant)
-    sols = solve_from_pos(1)
+
+    # Slot 1: choose only edge pieces
+    visible = state.visible[1]
+    variants = state.slot_cube_variants[1]
+
+    # Print all possible variants for slot 1 (edge pieces)
+    for stop_depth in [9]:
+        sols = 0
+        # print(f"Slot 1 possible cube IDs: {sorted(variants.ids)}")
+        for cube_id in sorted(variants.ids):
+            cube_sols = 0
+            for _, variant in enumerate(variants.variants[cube_id]):
+                valid = state.is_valid2(visible, variant)
+                if valid:
+                    state.place_cube(visible, 1, cube_id, variant)
+                    this_sols = solve_from_pos(2)
+                    cube_sols += this_sols
+                    state.unplace_cube(visible, 1, cube_id, variant)
+                    # print(f'    --> Total valid slot[2] variants with this slot[1]: {this_sols:,}')
+                else:
+                    pass #print(f'    invalid')
+            print(f'stop_depth {stop_depth}, cube #{cube_id}, {cube_sols:,} valid variants')
+            sols += cube_sols
     return sols
 
 # Create an empty n x n x n board, where each cell starts with a default cube (empty)

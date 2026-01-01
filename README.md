@@ -140,7 +140,7 @@ Each process can be tuned after starting, with `renice` so that, for example, se
 The "Christmas 2024" Python run found ~ 65 billion solutions in just over ten days. A [comparison script](./compare_outputs.py) allows the new run to be checked against this (for cube 8).
 
 
-```bash
+```
  ./compare_outputs.py out.txt ./out-cube8.txt
 Comparing out.txt vs ./out-cube8.txt
 Showing lines with dashcount <= 4
@@ -160,8 +160,27 @@ Note: Different number of lines - comparing up to shorter length
 ```
 
 This shows we haven't broken the C++ version.
-In comparison, in 24 hours, the C++ version (11 processes) has found ~ 2.9 trillion solutions
 
 ## Estimating run-time
 
-The [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) catalogues various runs done. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing all variants of piece[2] is taking around two days. Extrapolating from this suggests the whole run will finish in about 160 days.
+The [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) catalogues various runs done. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing the first piece[1] and all variants of piece[2] took around 23 hours:
+
+```
+out-cube8.txt:-- with - 7 - 3 - 5 	121891.048    65,473,163,264
+out-cube9.txt:-- with - 3 - 5 - 7 	80736.92	    38,955,118,592
+out-cube10.txt:-- with - 3 - 5 - 7	72396.94	    32,622,742,528
+out-cube11.txt:-- with - 7 - 3 - 5	64844.251	    29,704,595,456
+out-cube12.txt:-- with - 7 - 3 - 5	41221.292	    17,103,035,136
+out-cube12.txt:-- with - 3 - 5 - 7	83229.521	    34,123,643,648
+out-cube12.txt:-- with - 4 - 2 - 2	122172.331    46,714,152,192
+out-cube13.txt:-- with - 3 - 5 - 7	38352	        16,270,033,408
+out-cube13.txt:-- with - 5 - 7 - 3	84768.097	    36,207,573,504
+out-cube13.txt:-- with - 4 - 2 - 2	121017.138    48,175,673,600
+out-cube14.txt:-- with - 3 - 5 - 7	43167.36	    17,750,680,064
+out-cube14.txt:-- with - 5 - 7 - 3	83740.348	    34,752,132,096
+out-cube14.txt:-- with - 4 - 2 - 2	121892.865    46,947,904,512
+                                                  ==============
+                                                 464,800,448,000
+```
+
+This is ~5.5 million solutions per second.
