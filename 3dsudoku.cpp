@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <set>
 #include <cassert>
 #include <chrono>
 #include <iomanip>
@@ -108,38 +109,62 @@ Cube alternate_69(const Cube& cube) {
 
 // Return a list of up to 24 unique orientations of a cube
 std::vector<Cube> rotations(const Cube& cube) {
-    static const int face_mappings[24][6] = {
-        {0, 1, 2, 3, 4, 5}, {0, 1, 4, 5, 3, 2}, {0, 1, 3, 2, 5, 4}, {0, 1, 5, 4, 2, 3},
-        {1, 0, 3, 2, 4, 5}, {1, 0, 4, 5, 2, 3}, {1, 0, 2, 3, 5, 4}, {1, 0, 5, 4, 3, 2},
-        {2, 3, 0, 1, 5, 4}, {2, 3, 5, 4, 1, 0}, {2, 3, 1, 0, 4, 5}, {2, 3, 4, 5, 0, 1},
-        {3, 2, 1, 0, 5, 4}, {3, 2, 5, 4, 0, 1}, {3, 2, 0, 1, 4, 5}, {3, 2, 4, 5, 1, 0},
-        {4, 5, 2, 3, 1, 0}, {4, 5, 1, 0, 3, 2}, {4, 5, 3, 2, 0, 1}, {4, 5, 0, 1, 2, 3},
-        {5, 4, 3, 2, 1, 0}, {5, 4, 1, 0, 2, 3}, {5, 4, 2, 3, 0, 1}, {5, 4, 0, 1, 3, 2}
+    auto rotate_x = [](const std::array<int, 6>& faces) -> std::array<int, 6> {
+        // 90° rotation around x-axis (left-right axis)
+        return {faces[FRONT], faces[BACK], faces[LEFT], faces[RIGHT], faces[BOTTOM], faces[TOP]};
     };
 
-    std::vector<std::array<int, 6>> unique_faces;
-    for (int m = 0; m < 24; m++) {
-        std::array<int, 6> oriented;
-        for (int i = 0; i < 6; i++) {
-            oriented[i] = cube.faces[face_mappings[m][i]];
-        }
+    auto rotate_y = [](const std::array<int, 6>& faces) -> std::array<int, 6> {
+        // 90° rotation around y-axis (front-back axis)
+        return {faces[LEFT], faces[RIGHT], faces[BOTTOM], faces[TOP], faces[FRONT], faces[BACK]};
+    };
 
-        // Check if this orientation is unique
-        bool found = false;
-        for (const auto& existing : unique_faces) {
-            if (existing == oriented) {
-                found = true;
-                break;
+    auto rotate_z = [](const std::array<int, 6>& faces) -> std::array<int, 6> {
+        // 90° rotation around z-axis (top-bottom axis)
+        return {faces[TOP], faces[BOTTOM], faces[FRONT], faces[BACK], faces[RIGHT], faces[LEFT]};
+    };
+
+    // Generate all 24 rotations by trying all rotation combinations
+    std::vector<std::array<int, 6>> unique_orientations;
+
+    std::array<int, 6> state_x = cube.faces;
+    for (int x = 0; x < 4; x++) {
+        std::array<int, 6> state_y = state_x;
+        for (int y = 0; y < 4; y++) {
+            std::array<int, 6> state_z = state_y;
+            for (int z = 0; z < 4; z++) {
+                // Check if this orientation is unique
+                bool found = false;
+                for (const auto& existing : unique_orientations) {
+                    if (existing == state_z) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    unique_orientations.push_back(state_z);
+                }
+                state_z = rotate_z(state_z);
             }
+            state_y = rotate_y(state_y);
         }
-        if (!found) {
-            unique_faces.push_back(oriented);
-        }
+        state_x = rotate_x(state_x);
+    }
+
+    // Check we have the expected number of unique orientations for the various cube types
+    int num_nonblanks = cube.nonblanks();
+    int expected_counts[] = {1, 6, 24, 24};
+    int expected = expected_counts[num_nonblanks];
+    if (unique_orientations.size() != expected) {
+        std::cerr << "Cube ID " << cube.id << " with " << num_nonblanks
+                  << " nonblank faces has " << unique_orientations.size()
+                  << " unique orientations, expected " << expected << std::endl;
+        assert(false);
     }
 
     std::vector<Cube> result;
-    for (const auto& f : unique_faces) {
-        result.emplace_back(f, cube.id);
+    for (const auto& faces : unique_orientations) {
+        result.emplace_back(faces, cube.id);
     }
     return result;
 }
@@ -395,7 +420,7 @@ uint64_t solve_from_pos(int pos) {
 
 uint64_t solve_from_pos_deep(int pos) {
     if (pos >= g_depth) [[unlikely]] {
-        // std::cout << g_state->to_string() << std::endl; // Print solution
+        std::cout << g_state->to_string() << std::endl; // Print solution
         return 1;
     }
 
