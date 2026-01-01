@@ -160,9 +160,20 @@ class CubeCollection {
 public:
     std::array<std::vector<Cube>, 4> marked_cubes; // 4 = number of Marks values
 
-    CubeCollection(const std::vector<std::array<int, 6>>& f_list) {
+    CubeCollection(const std::vector<std::vector<int>>& f_list) {
+        // Canonical positions: TOP, LEFT, FRONT
+        const int canonical_positions[] = {TOP, LEFT, FRONT};
+
         for (int id = 0; id < f_list.size(); id++) {
-            Cube c(f_list[id], id);
+            const std::vector<int>& face_values = f_list[id];
+
+            // Expand to full 6-element array with canonical positioning
+            std::array<int, 6> faces = {0, 0, 0, 0, 0, 0};
+            for (int i = 0; i < face_values.size(); i++) {
+                faces[canonical_positions[i]] = face_values[i];
+            }
+
+            Cube c(faces, id);
             int marks = c.nonblanks();
             marked_cubes[marks].push_back(c);
         }
@@ -411,7 +422,7 @@ uint64_t solve_from_pos_deep(int pos) {
     return sols;
 }
 
-uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<std::array<int, 6>>& pieces_def, int hint_cube_id = -1) {
+uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, int hint_cube_id = -1) {
     g_start_time = std::chrono::high_resolution_clock::now();
     g_depth = board->strip.size();
 
@@ -436,7 +447,7 @@ uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<
             const std::vector<Cube>& cube_variants = variants_pos1.variants[hint_cube_id];
 
             uint64_t sols = 0;
-            
+
             // Try all valid variants and sum solutions
             for (const Cube& v : cube_variants) {
                 if (state.is_valid2(visible1, v)) {
@@ -449,10 +460,9 @@ uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, const std::vector<
 
             if (sols == 0) {
                 // All variants conflict
-                Cube original_hint(pieces_def[hint_cube_id], hint_cube_id);
-                std::cerr << "Conflict: initial corner cube pos[0]=" << state.piece[0].to_string() << " conflicts with hint cube #" << hint_cube_id << " (" << original_hint.to_string() << ")" << std::endl;
+                std::cerr << "Conflict: initial corner cube pos[0]=" << state.piece[0].to_string() << " conflicts with hint cube #" << hint_cube_id << std::endl;
             }
-            
+
             return sols;
         } else {
             std::cerr << "Warning: Hint cube #" << hint_cube_id << " is not valid for position 1" << std::endl;
@@ -479,50 +489,50 @@ int main(int argc, char* argv[]) {
     const int CUBE_LEN = 3;
     Board board(CUBE_LEN);
 
-    std::vector<std::array<int, 6>> pieces = {
-        // order: top, bottom, left, right, front, back. 0=blank. 9s and 6s are equivalent.
-
+    // Canonical form: only marked face values (top, left, front)
+    // Will be expanded to full 6-element arrays by CubeCollection
+    std::vector<std::vector<int>> pieces = {
         // blank
-        {0, 0, 0, 0, 0, 0}, // 0
+        {}, // 0
 
-        // one marked
-        {3, 0, 0, 0, 0, 0}, // 1
-        {4, 0, 0, 0, 0, 0}, // 2
-        {7, 0, 0, 0, 0, 0}, // 3
-        {8, 0, 0, 0, 0, 0}, // 4
-        {8, 0, 0, 0, 0, 0}, // 5
-        {9, 0, 0, 0, 0, 0}, // 6
+        // one marked (top)
+        {3}, // 1
+        {4}, // 2
+        {7}, // 3
+        {8}, // 4
+        {8}, // 5
+        {9}, // 6
 
-        // two marked
-        {1, 0, 0, 0, 9, 0}, // 7
-        {3, 0, 0, 0, 2, 0}, // 8
-        {7, 0, 0, 5, 0, 0}, // 9
-        {4, 0, 0, 5, 0, 0}, // 10=A
-        {4, 0, 0, 0, 0, 8}, // 11=B
-        {5, 0, 0, 9, 0, 0}, // 12=C
-        {6, 0, 0, 5, 0, 0}, // 13=D
-        {7, 0, 0, 0, 0, 6}, // 14=E
-        {3, 0, 0, 0, 9, 0}, // 15=F
-        {7, 0, 0, 4, 0, 0}, // 16=G
-        {7, 0, 0, 0, 9, 0}, // 17=H
-        {4, 0, 0, 0, 0, 6}, // 18=I
+        // two marked (top, left)
+        {1, 9}, // 7
+        {3, 2}, // 8
+        {7, 5}, // 9
+        {4, 5}, // 10=A
+        {4, 8}, // 11=B
+        {5, 9}, // 12=C
+        {6, 5}, // 13=D
+        {7, 6}, // 14=E
+        {3, 9}, // 15=F
+        {7, 4}, // 16=G
+        {7, 9}, // 17=H
+        {4, 6}, // 18=I
 
-        // three marked
-        {1, 0, 3, 0, 1, 0}, // 19=J
-        {7, 0, 0, 3, 5, 0}, // 20=K
-        {4, 0, 2, 0, 2, 0}, // 21=L
-        {9, 0, 2, 0, 0, 1}, // 22=M
-        {5, 0, 6, 0, 0, 8}, // 23=N
-        {8, 0, 0, 1, 0, 8}, // 24=O
-        {3, 0, 1, 0, 6, 0}, // 25=P
-        {2, 0, 0, 6, 2, 0}, // 26=Q
+        // three marked (top, left, front)
+        {1, 3, 1}, // 19=J
+        {7, 5, 3}, // 20=K
+        {4, 2, 2}, // 21=L
+        {9, 1, 2}, // 22=M
+        {5, 8, 6}, // 23=N
+        {8, 1, 8}, // 24=O
+        {3, 1, 6}, // 25=P
+        {2, 2, 6}, // 26=Q
     };
 
     assert(pieces.size() == CUBE_LEN * CUBE_LEN * CUBE_LEN);
 
     CubeCollection cubes(pieces);
 
-    uint64_t sols = solve_sudoku_3d(&board, &cubes, pieces, hint_cube_id);
+    uint64_t sols = solve_sudoku_3d(&board, &cubes, hint_cube_id);
     std::cout << "Solutions found: " << sols << std::endl;
 
     return 0;

@@ -115,7 +115,7 @@ The result is an optimized constraint satisfaction solver that can explore milli
 I found `clang++` to be slightly faster than `g++` on both Apple M3 (ARM) and Linux/x64 architectures. This works for both:
 
 ```bash
-clang++ -O3 -march=native -funroll-loops -fomit-frame-pointer -ffast-math -o 3dsudoku 3dsudoku.cpp
+clang++ -std=c++20 -O3 -march=native -funroll-loops -fomit-frame-pointer -ffast-math -o 3dsudoku 3dsudoku.cpp
 ```
 
 ## Parallelization Strategy
