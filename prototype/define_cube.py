@@ -33,52 +33,37 @@ def alternate_69(cube:Cube) -> Cube:
 
 # Return a list of up to 24 unique orientations of a cube
 def rotations(cube:Cube) -> list:
-    def oriented_as(c: Cube, mapping):
-        """
-        Reorient the cube according to a specific face mapping.
+    def rotate_x(faces: tuple) -> tuple:
+        """90° rotation around x-axis (left-right axis)"""
+        return (faces[Sides.front.value], faces[Sides.back.value], faces[Sides.left.value], faces[Sides.right.value], faces[Sides.bottom.value], faces[Sides.top.value])
 
-        Args:
-            c (Cube): The cube to reorient.
-            mapping (tuple[int]): Indices for the new orientation.
+    def rotate_y(faces: tuple) -> tuple:
+        """90° rotation around y-axis (front-back axis)"""
+        return (faces[Sides.left.value], faces[Sides.right.value], faces[Sides.bottom.value], faces[Sides.top.value], faces[Sides.front.value], faces[Sides.back.value])
 
-        Returns:
-            tuple: The reoriented cube's faces in (top, bottom, left, right, front, back) order.
-        """
-        return tuple(c.faces[i] for i in mapping)
+    def rotate_z(faces: tuple) -> tuple:
+        """90° rotation around z-axis (top-bottom axis)"""
+        return (faces[Sides.top.value], faces[Sides.bottom.value], faces[Sides.front.value], faces[Sides.back.value], faces[Sides.right.value], faces[Sides.left.value])
 
-    # Define mappings, each is an orientation of the cube with a specific face at the top:
-    # [top, bottom, left, right, front, back], in each of 4 rotations around the vertical axis
-    face_mappings = [
-        (0, 1, 2, 3, 4, 5), # Top is 0, rotation 0
-        (0, 1, 4, 5, 3, 2), # Top is 0, rotation 1
-        (0, 1, 3, 2, 5, 4), # Top is 0, rotation 2
-        (0, 1, 5, 4, 2, 3), # Top is 0, rotation 3
-        (1, 0, 3, 2, 4, 5), # Top is 1, rotation 0
-        (1, 0, 4, 5, 2, 3), # Top is 1, rotation 1
-        (1, 0, 2, 3, 5, 4), # Top is 1, rotation 2
-        (1, 0, 5, 4, 3, 2), # Top is 1, rotation 3
-        (2, 3, 0, 1, 5, 4), # Top is 2, rotation 0
-        (2, 3, 5, 4, 1, 0), # Top is 2, rotation 1
-        (2, 3, 1, 0, 4, 5), # Top is 2, rotation 2
-        (2, 3, 4, 5, 0, 1), # Top is 2, rotation 3
-        (3, 2, 1, 0, 5, 4), # Top is 3, rotation 0
-        (3, 2, 5, 4, 0, 1), # Top is 3, rotation 1
-        (3, 2, 0, 1, 4, 5), # Top is 3, rotation 2
-        (3, 2, 4, 5, 1, 0), # Top is 3, rotation 3
-        (4, 5, 2, 3, 1, 0), # Top is 4, rotation 0
-        (4, 5, 1, 0, 3, 2), # Top is 4, rotation 1
-        (4, 5, 3, 2, 0, 1), # Top is 4, rotation 2
-        (4, 5, 0, 1, 2, 3), # Top is 4, rotation 3
-        (5, 4, 3, 2, 1, 0), # Top is 5, rotation 0
-        (5, 4, 1, 0, 2, 3), # Top is 5, rotation 1
-        (5, 4, 2, 3, 0, 1), # Top is 5, rotation 2
-        (5, 4, 0, 1, 3, 2), # Top is 5, rotation 3
-    ]
-    # Generate unique orientations as tuples
-    unique_orientations = {
-        oriented_as(cube, mapping) for mapping in face_mappings
-    }
+    # Generate all 24 rotations by trying all rotation combinations
+    unique_orientations = set()
 
+    state_x = tuple(cube.faces)
+    for _ in range(4):
+        state_y = state_x
+        for _ in range(4):
+            state_z = state_y
+            for _ in range(4):
+                unique_orientations.add(state_z)
+                state_z = rotate_z(state_z)
+            state_y = rotate_y(state_y)
+        state_x = rotate_x(state_x)
+
+    # Check we have the expected number of unique orientations for the various cube types
+    num_nonblanks = cube.nonblanks()
+    expected_counts = {0:1, 1:6, 2:24, 3:24}
+    assert len(unique_orientations) == expected_counts[num_nonblanks], \
+        f"Cube ID {cube.id} with {num_nonblanks} nonblank faces has {len(unique_orientations)} unique orientations, expected {expected_counts[num_nonblanks]}"
     # Return Cube objects for each unique orientation
     return [Cube(faces, cube.id) for faces in unique_orientations]
 
@@ -89,7 +74,7 @@ class CubeCollection:
 
         # Canonical positions for marked faces: top, left, front
         canonical_positions = [Sides.top.value, Sides.left.value, Sides.front.value]
-        
+
         for id, face_values in enumerate(f_list):
             # Convert tuple to full 6-element array with canonical positioning
             faces = [0] * 6
