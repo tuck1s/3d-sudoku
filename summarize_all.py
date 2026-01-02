@@ -45,10 +45,24 @@ def main():
     
     grand_total = 0
     
+    max_counts = {
+        'out-cube8.txt':  28,
+        'out-cube9.txt':  39,
+        'out-cube10.txt': 38,
+        'out-cube11.txt': 38,
+        'out-cube12.txt': 70,
+        'out-cube13.txt': 70,
+        'out-cube14.txt': 76,
+        'out-cube15.txt': 74,
+        'out-cube16.txt': 42,
+        'out-cube17.txt': 76,
+        'out-cube18.txt': 76
+}
     for filename in files:
         total, count = summarize_file(filename)
         if count > 0:
-            print(f"{filename}: {count} slot[1] alternatives found, {total:,} total solutions")
+            m = max_counts.get(filename, 1)
+            print(f"{filename:20}: {count} / {m} = {count / m * 100:.2f}% slot[1] alternatives found, {total:,} total solutions")
             grand_total += total
     
     print(f"\nGrand total: {grand_total:,} solutions")
