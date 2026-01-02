@@ -57,15 +57,19 @@ def main():
         'out-cube16.txt': 42,
         'out-cube17.txt': 76,
         'out-cube18.txt': 76
-}
+    }
+    grand_count = 0
+    grand_m = 0
     for filename in files:
         total, count = summarize_file(filename)
         if count > 0:
             m = max_counts.get(filename, 1)
             print(f"{filename:20}: {count} / {m} = {count / m * 100:.2f}% slot[1] alternatives found, {total:,} total solutions")
             grand_total += total
+            grand_m += m
+            grand_count += count
     
-    print(f"\nGrand total: {grand_total:,} solutions")
+    print(f"\nGrand total: {grand_count} / {grand_m} = {grand_count / grand_m * 100:.2f}% slot[1] alternatives found, {grand_total:,} solutions")
 
 if __name__ == '__main__':
     main()
