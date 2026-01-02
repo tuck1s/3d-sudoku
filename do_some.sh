@@ -7,8 +7,17 @@ if [ $# -eq 0 ]; then
 fi
 
 echo "Starting cubes: $@"
+
+core=0
+num_cores=$(nproc)  # Detect number of available CPUs
+
 for i in "$@"; do
-    echo "Starting cube $i..."
-    nohup ./3dsudoku $i >out-cube$i.txt &
+    echo "Starting cube $i on CPU core $core..."
+    # Pin process to specific core and run in background
+    nohup taskset -c $core ./3dsudoku "$i" >out-cube"$i".txt 2>&1 &
+    
+    # Increment core, wrap around if more processes than cores
+    core=$(( (core + 1) % num_cores ))
 done
+
 echo "All processes started."
