@@ -420,7 +420,7 @@ uint64_t solve_from_pos(int pos) {
 
 uint64_t solve_from_pos_deep(int pos) {
     if (pos >= g_depth) [[unlikely]] {
-        std::cout << g_state->to_string() << std::endl; // Print solution
+        // std::cout << g_state->to_string() << std::endl; // Print solution
         return 1;
     }
 
