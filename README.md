@@ -200,7 +200,7 @@ Starting corner pos[0] = `1 3 1`:
 
 |pos[1] #|Cube Faces|Filename|Number of solutions|
 |--|--|--|--|
-|7 |`{1, 9}`||0|
+|7  |`{1, 9}`||0|
 |8  |`{3, 2}`|out-cube8.txt |
 |9  |`{7, 5}`|out-cube9.txt |8,980,535,614,976|
 |10 |`{4, 5}`|out-cube10.txt|8,821,196,643,328|
@@ -213,8 +213,7 @@ Starting corner pos[0] = `1 3 1`:
 |17 |`{7, 9}`|out-cube17.txt|8,273,171,435,264|
 |18 |`{4, 6}`|out-cube18.txt|8,274,887,893,248|
 
-
-
+Cubes #12 and #13 are functionally identical.
 
 
 
