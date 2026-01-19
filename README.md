@@ -163,7 +163,7 @@ This shows we haven't broken the C++ version.
 
 ## Estimating run-time
 
-A [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) was used to estimate the expected total run-time. On a 6th-gen Intel i7 x64 machine running all 11 processes simultaneously, just one variant of piece[2] took around 23 hours:
+A [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) was used to estimate the expected total run-time. On a 6th-gen Intel i7 x64 machine running all 11 processes simultaneously, just one variant of pos[2] took around 23 hours:
 
 ```
 out-cube8.txt:-- with - 7 - 3 - 5 	121891.048    65,473,163,264
@@ -185,19 +185,22 @@ out-cube14.txt:-- with - 4 - 2 - 2	121892.865    46,947,904,512
 
 This is ~5.5 million solutions per second.
 
-Using the Python solver to return early (not going to full depth) shows piece[2] has between 28 and 76 valid variations, suggesting ~ 3 months runtime on this machine.
+Using the Python solver to return early (not going to full depth) shows that for each pos[1], pos[2] has between 28 and 76 valid variations, suggesting ~ 3 months runtime on this machine.
 
-A faster approach is to minimize context switching:
+A faster approach:
 * match the number of processes to the number of cores on a host (not overloading it)
-* pin the processes to a core - see [do_some.sh](./do_some.sh)
+* minimize context switching - pin the processes to a core - see [do_some.sh](./do_some.sh)
+* run on more hosts
 
 This brings the expected runtime down to ~30 days.
 
 ## Results (so far)
 
-|Piece[1] #|Cube Faces|Filename|Number of solutions|
+Starting corner pos[0] = `1 3 1`:
+
+|pos[1] #|Cube Faces|Filename|Number of solutions|
 |--|--|--|--|
-|7 |`{1,9}`||0|
+|7 |`{1, 9}`||0|
 |8  |`{3, 2}`|out-cube8.txt |
 |9  |`{7, 5}`|out-cube9.txt |8,980,535,614,976|
 |10 |`{4, 5}`|out-cube10.txt|8,821,196,643,328|
@@ -209,10 +212,6 @@ This brings the expected runtime down to ~30 days.
 |16 |`{7, 4}`|out-cube16.txt|9,490,246,824,960|
 |17 |`{7, 9}`|out-cube17.txt|8,273,171,435,264|
 |18 |`{4, 6}`|out-cube18.txt|8,274,887,893,248|
-
-
-Edge piece[1] cube 7 always conflicts with starting corner piece[0] = `1 3 1`, hence no solutions for this.
-
 
 
 
