@@ -163,7 +163,7 @@ This shows we haven't broken the C++ version.
 
 ## Estimating run-time
 
-The [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) catalogues various runs done. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing the first piece[1] and all variants of piece[2] took around 23 hours:
+A [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) was used to estimate the expected total run-time. On a 6th-gen Intel x64 machine running all 11 processes simultaneously, doing one value of piece[1] and all variants of piece[2] took around 23 hours:
 
 ```
 out-cube8.txt:-- with - 7 - 3 - 5 	121891.048    65,473,163,264
@@ -185,21 +185,4 @@ out-cube14.txt:-- with - 4 - 2 - 2	121892.865    46,947,904,512
 
 This is ~5.5 million solutions per second.
 
-Using the Python solver to return early, enables an estimate of the expected workload for each cube thread:
-
-```
-stop_depth 9, cube #7, 0 valid variants
-stop_depth 9, cube #8, 5,385,612 valid variants
-stop_depth 9, cube #9, 6,040,982 valid variants
-stop_depth 9, cube #10, 6,233,496 valid variants
-stop_depth 9, cube #11, 6,383,600 valid variants
-stop_depth 9, cube #12, 8,717,740 valid variants
-stop_depth 9, cube #13, 8,717,740 valid variants
-stop_depth 9, cube #14, 9,525,790 valid variants
-stop_depth 9, cube #15, 11,265,022 valid variants
-stop_depth 9, cube #16, 6,823,478 valid variants
-stop_depth 9, cube #17, 9,525,790 valid variants
-stop_depth 9, cube #18, 10,022,738 valid variants
-```
-
-which enables us to set `renice` values for the processes in a [script](./renice-3dsudoku.sh).
+Using the Python solver to return early, gave an estimate of the expected workload for each piece[1] thread
