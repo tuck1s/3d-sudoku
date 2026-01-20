@@ -18,6 +18,26 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["out.txt", "out-cpp.txt"]
+        }        ,
+        {
+            "name": "C++: Build and Debug 3dsudoku.cpp",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/3dsudoku",
+            "args": ["8"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "build 3dsudoku",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.pretty-printing true",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

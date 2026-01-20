@@ -2,3 +2,5 @@ Pipfile.lock
 prototype/__pycache__/*
 out*.txt
 3dsudoku
+3dsudoku.dSYM/Contents/Info.plist
+3dsudoku.dSYM/Contents/Resources/Relocations/aarch64/3dsudoku.yml

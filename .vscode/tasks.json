@@ -1,0 +1,27 @@
+{
+    "tasks": [
+        {
+            "label": "build 3dsudoku",
+            "type": "shell",
+            "command": "clang++",
+            "args": [
+                "-std=c++20",
+                "-g", // Needs symbols and no optimization for debugger
+                "-O0",
+                "-march=native",
+                "-funroll-loops",
+                "-fomit-frame-pointer",
+                "-ffast-math",
+                "-o",
+                "3dsudoku",
+                "3dsudoku.cpp"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        }
+    ],
+    "version": "2.0.0"
+}

@@ -196,24 +196,36 @@ This brings the expected runtime down to ~30 days.
 
 ## Results (so far)
 
-Starting corner pos[0] = `1 3 1`:
+Starting corner pos[0] = `1 3 1`.
 
-|pos[1] #|Cube Faces|Filename|Number of solutions|
-|--|--|--|--|
-|7  |`{1, 9}`||0|
-|8  |`{3, 2}`|out-cube8.txt |
-|9  |`{7, 5}`|out-cube9.txt |8,980,535,614,976|
-|10 |`{4, 5}`|out-cube10.txt|8,821,196,643,328|
-|11 |`{4, 8}`|out-cube11.txt|8,486,106,669,056|
-|12 |`{5, 9}`|out-cube12.txt|
-|13 |`{6, 5}`|out-cube13.txt|
-|14 |`{7, 6}`|out-cube14.txt|
-|15 |`{3, 9}`|out-cube15.txt|
-|16 |`{7, 4}`|out-cube16.txt|9,490,246,824,960|
-|17 |`{7, 9}`|out-cube17.txt|8,273,171,435,264|
-|18 |`{4, 6}`|out-cube18.txt|8,274,887,893,248|
+Each pos[1] + pos[2] cube choice gives rise to a certain number of variants to check.
 
-Cubes #12 and #13 are functionally identical.
+|pos[1] #|Cube Faces|Variants|Results filename|Number of solutions|
+|--|--|--|--|--|
+|7  |`{1, 9}`|0||0|
+|8  |`{3, 2}`|28|out-cube8.txt |8,236,990,413,312|
+|9  |`{7, 5}`|39|out-cube9.txt |8,980,535,614,976|
+|10 |`{4, 5}`|38|out-cube10.txt|8,821,196,643,328|
+|11 |`{4, 8}`|38|out-cube11.txt|8,486,106,669,056|
+|12 |`{5, 9}`|70|out-cube12.txt|
+|13 |`{6, 5}`|70|out-cube13.txt|
+|14 |`{7, 6}`|76|out-cube14.txt|
+|15 |`{3, 9}`|74|out-cube15.txt|
+|16 |`{7, 4}`|42|out-cube16.txt|9,490,246,824,960|
+|17 |`{7, 9}`|76|out-cube17.txt|8,273,171,435,264|
+|18 |`{4, 6}`|76|out-cube18.txt|8,274,887,893,248|
+
+Due to 6/9 ambiguity, cubes #13 and #13 are equivalent, as are cubes #14 and #17.
+
+
+
+
+
+
+
+
+
+
 
 
 

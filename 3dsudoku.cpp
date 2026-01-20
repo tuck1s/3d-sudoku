@@ -472,14 +472,25 @@ uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, int hint_cube_id =
             const std::vector<Cube>& cube_variants = variants_pos1.variants[hint_cube_id];
 
             uint64_t sols = 0;
-
+            int pos = 1;
             // Try all valid variants and sum solutions
-            for (const Cube& v : cube_variants) {
-                if (state.is_valid2(visible1, v)) {
-                    state.place_cube(visible1, 1, hint_cube_id, v);
-                    std::cout << "Hint: initial corner cube pos[0]=" << state.piece[0].to_string() << " pos[1]=" << v.to_string() << std::endl;
+            for (const Cube& variant : cube_variants) {
+                if (state.is_valid2(visible1, variant)) {
+                    state.place_cube(visible1, 1, hint_cube_id, variant);
+                    std::cout << "Hint: initial corner cube pos[0]=" << state.piece[0].to_string() << " pos[1]=" << variant.to_string() << std::endl;
                     sols += solve_from_pos(2);
-                    state.unplace_cube(visible1, 1, hint_cube_id, v);
+                    sols += 4000000000000; // TEMP DEBUG
+                    state.unplace_cube(visible1, 1, hint_cube_id, variant);
+
+                    auto elapsed = std::chrono::high_resolution_clock::now() - g_start_time;
+                    auto elapsed_sec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / 1000.0;
+                    std::cout << std::string(pos, '-') << " with " << variant.to_string()
+                    << "\t" << std::fixed << std::setprecision(3) << elapsed_sec
+                    << "s\t ";
+                    std::cout.imbue(std::locale(""));
+                    std::cout << sols;
+                    std::cout.imbue(std::locale::classic());
+                    std::cout << " solutions" << std::endl;
                 }
             }
 
@@ -558,7 +569,10 @@ int main(int argc, char* argv[]) {
     CubeCollection cubes(pieces);
 
     uint64_t sols = solve_sudoku_3d(&board, &cubes, hint_cube_id);
-    std::cout << "Solutions found: " << sols << std::endl;
-
+    std::cout << "Solutions found: ";
+    std::cout.imbue(std::locale(""));
+    std::cout << sols;
+    std::cout.imbue(std::locale::classic());
+    std::cout << std::endl;
     return 0;
 }
