@@ -479,7 +479,6 @@ uint64_t solve_sudoku_3d(Board* board, CubeCollection* cubes, int hint_cube_id =
                     state.place_cube(visible1, 1, hint_cube_id, variant);
                     std::cout << "Hint: initial corner cube pos[0]=" << state.piece[0].to_string() << " pos[1]=" << variant.to_string() << std::endl;
                     sols += solve_from_pos(2);
-                    sols += 4000000000000; // TEMP DEBUG
                     state.unplace_cube(visible1, 1, hint_cube_id, variant);
 
                     auto elapsed = std::chrono::high_resolution_clock::now() - g_start_time;
