@@ -210,7 +210,7 @@ Each pos[1] + pos[2] cube choice gives rise to a certain number of variants to c
 |12 |`{5, 9}`|70|out-cube12.txt|
 |13 |`{6, 5}`|70|out-cube13.txt|
 |14 |`{7, 6}`|76|out-cube14.txt|
-|15 |`{3, 9}`|74|out-cube15.txt|
+|15 |`{3, 9}`|74|out-cube15.txt|12,332,454,482,944|
 |16 |`{7, 4}`|42|out-cube16.txt|9,490,246,824,960|
 |17 |`{7, 9}`|76|out-cube17.txt|8,273,171,435,264|
 |18 |`{4, 6}`|76|out-cube18.txt|8,274,887,893,248|
