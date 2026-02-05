@@ -8,7 +8,7 @@ def parse_solution_count(line):
     # Match pattern: dashes, with part, time, solution count
     pattern = r'^(--)\s+with.*?\t[\d.]+s\t\s*([0-9,]+)\s+solutions'
     match = re.match(pattern, line)
-    
+
     if match:
         dashes, count_str = match.groups()
         # Remove commas and convert to int
@@ -20,15 +20,26 @@ def summarize_file(filename):
     """Summarize level-two lines from a single file."""
     total = 0
     count = 0
-    
+
     try:
         with open(filename, 'r') as f:
+            previous_count = None
+            previous_line = ''
             for line in f:
                 solution_count = parse_solution_count(line)
                 if solution_count is not None:
-                    total += solution_count
+                    # Workaround for the mistake in C code that accumulated pos[2] totals across all variants (giving counts that were too high)
+                    if previous_count is not None and solution_count < previous_count:
+                        print(previous_line)
+                        total += previous_count
                     count += 1
-        
+                    previous_count = solution_count
+                    previous_line = line
+
+            if previous_count is not None:
+                print(previous_line)
+                total += previous_count
+
         return total, count
     except FileNotFoundError:
         print(f"Error: {filename} not found")
@@ -36,15 +47,17 @@ def summarize_file(filename):
 
 def main():
     # Get all out-cube*.txt files sorted by number
-    files = sorted(glob.glob('out-cube*.txt'), 
+    files = sorted(glob.glob('out-cube*.txt'),
                    key=lambda x: int(re.search(r'\d+', x).group()))
-    
+
     if not files:
         print("No out-cube*.txt files found")
         return
-    
+
+    # files = ['out-test.txt']
+
     grand_total = 0
-    
+
     max_counts = {
         'out-cube8.txt':  28,
         'out-cube9.txt':  39,
@@ -68,7 +81,7 @@ def main():
             grand_total += total
             grand_m += m
             grand_count += count
-    
+
     print(f"\nGrand total: {grand_count} / {grand_m} = {grand_count / grand_m * 100:.2f}% slot[1] alternatives found, {grand_total:,} solutions")
 
 if __name__ == '__main__':

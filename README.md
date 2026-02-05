@@ -203,22 +203,23 @@ Each pos[1] + pos[2] cube choice gives rise to a certain number of variants to c
 |pos[1] #|Cube Faces|Variants|Results filename|Number of solutions|
 |--|--|--|--|--|
 |7  |`{1, 9}`|0||0|
-|8  |`{3, 2}`|28|out-cube8.txt |8,236,990,413,312|
-|9  |`{7, 5}`|39|out-cube9.txt |8,980,535,614,976|
-|10 |`{4, 5}`|38|out-cube10.txt|8,821,196,643,328|
-|11 |`{4, 8}`|38|out-cube11.txt|8,486,106,669,056|
-|12 |`{5, 9}`|70|out-cube12.txt|
-|13 |`{6, 5}`|70|out-cube13.txt|
-|14 |`{7, 6}`|76|out-cube14.txt|
-|15 |`{3, 9}`|74|out-cube15.txt|12,332,454,482,944|
-|16 |`{7, 4}`|42|out-cube16.txt|9,490,246,824,960|
-|17 |`{7, 9}`|76|out-cube17.txt|8,273,171,435,264|
-|18 |`{4, 6}`|76|out-cube18.txt|8,274,887,893,248|
+|8  |`{3, 2}`|28|out-cube8.txt |963,541,592,064|
+|9  |`{7, 5}`|39|out-cube9.txt |744,549,967,872|
+|10 |`{4, 5}`|38|out-cube10.txt|747,100,652,544|
+|11 |`{4, 8}`|38|out-cube11.txt|717,611,621,376|
+|12 |`{5, 9}`|70|out-cube12.txt|727,892,265,472|
+|13 |`{6, 5}`|70|out-cube13.txt|727,892,265,472|
+|14 |`{7, 6}`|76|out-cube14.txt|728,578,428,928|
+|15 |`{3, 9}`|74|out-cube15.txt|875,854,398,464|
+|16 |`{7, 4}`|42|out-cube16.txt|743,394,725,888|
+|17 |`{7, 9}`|76|out-cube17.txt|728,578,428,928|
+|18 |`{4, 6}`|76|out-cube18.txt|722,821,117,952|
 
-Due to 6/9 ambiguity, cubes #13 and #13 are equivalent, as are cubes #14 and #17.
+Grand total: 8,427,815,464,960 solutions
 
+Due to 6/9 ambiguity, cubes #12 and #13 are equivalent, as are cubes #14 and #17.
 
-
+The [summarize_all.py](./summarize_all.py) program adjusts for some issues with the logging output during development, [summary.txt](./summary.txt) shows the output of adjusted counts.
 
 
 

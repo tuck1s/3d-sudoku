@@ -1,0 +1,81 @@
+-- with - 2 - 2 - 9	972526.398s	 554,607,441,920 solutions
+
+-- with - 9 - 2 - 2	1499802.916s	 408,934,150,144 solutions
+
+out-cube8.txt       : 28 / 28 = 100.00% slot[1] alternatives found, 963,541,592,064 total solutions
+-- with - 9 - 2 - 2	777550.230s	 422,546,722,816 solutions
+
+-- with - 9 - 2 - 2	1382074.726s	 322,003,245,056 solutions
+
+out-cube9.txt       : 39 / 39 = 100.00% slot[1] alternatives found, 744,549,967,872 total solutions
+-- with - 9 - 2 - 2	718250.555s	 390,709,439,488 solutions
+
+-- with - 9 - 2 - 2	1372983.465s	 356,391,213,056 solutions
+
+out-cube10.txt      : 38 / 38 = 100.00% slot[1] alternatives found, 747,100,652,544 total solutions
+-- with - 9 - 2 - 2	619725.999s	 354,090,632,192 solutions
+
+-- with - 9 - 2 - 2	1261513.192s	 363,520,989,184 solutions
+
+out-cube11.txt      : 38 / 38 = 100.00% slot[1] alternatives found, 717,611,621,376 total solutions
+-- with - 9 - 2 - 2	326429.143s	 176,048,126,720 solutions
+
+-- with - 2 - 2 - 9	639163.507s	 187,898,006,016 solutions
+
+-- with - 9 - 2 - 2	942876.595s	 176,048,126,720 solutions
+
+-- with - 9 - 2 - 2	1240494.799s	 187,898,006,016 solutions
+
+out-cube12.txt      : 70 / 70 = 100.00% slot[1] alternatives found, 727,892,265,472 total solutions
+-- with - 9 - 2 - 2	325966.690s	 187,898,006,016 solutions
+
+-- with - 9 - 2 - 2	620903.575s	 176,048,126,720 solutions
+
+-- with - 2 - 2 - 9	941182.533s	 187,898,006,016 solutions
+
+-- with - 9 - 2 - 2	1200010.270s	 176,048,126,720 solutions
+
+out-cube13.txt      : 70 / 70 = 100.00% slot[1] alternatives found, 727,892,265,472 total solutions
+-- with - 9 - 2 - 2	368893.967s	 194,239,775,232 solutions
+
+-- with - 9 - 2 - 2	620834.850s	 170,049,439,232 solutions
+
+-- with - 9 - 2 - 2	912334.002s	 194,239,775,232 solutions
+
+-- with - 2 - 2 - 9	1162287.060s	 170,049,439,232 solutions
+
+out-cube14.txt      : 76 / 76 = 100.00% slot[1] alternatives found, 728,578,428,928 total solutions
+-- with - 9 - 2 - 2	490200.237s	 240,517,488,640 solutions
+
+-- with - 2 - 2 - 9	876656.926s	 197,409,710,592 solutions
+
+-- with - 9 - 2 - 2	1365372.977s	 240,517,488,640 solutions
+
+-- with - 9 - 2 - 2	1735821.692s	 197,409,710,592 solutions
+
+out-cube15.txt      : 74 / 74 = 100.00% slot[1] alternatives found, 875,854,398,464 total solutions
+-- with - 9 - 2 - 2	698517.199s	 387,376,509,952 solutions
+
+-- with - 9 - 2 - 2	1337395.771s	 356,018,215,936 solutions
+
+out-cube16.txt      : 42 / 42 = 100.00% slot[1] alternatives found, 743,394,725,888 total solutions
+-- with - 9 - 2 - 2	390072.895s	 194,239,775,232 solutions
+
+-- with - 2 - 2 - 9	712920.986s	 170,049,439,232 solutions
+
+-- with - 9 - 2 - 2	1103052.013s	 194,239,775,232 solutions
+
+-- with - 9 - 2 - 2	1396156.907s	 170,049,439,232 solutions
+
+out-cube17.txt      : 76 / 76 = 100.00% slot[1] alternatives found, 728,578,428,928 total solutions
+-- with - 9 - 2 - 2	369724.201s	 186,071,495,168 solutions
+
+-- with - 9 - 2 - 2	702092.992s	 175,339,063,808 solutions
+
+-- with - 9 - 2 - 2	1071743.699s	 186,071,495,168 solutions
+
+-- with - 2 - 2 - 9	1395929.928s	 175,339,063,808 solutions
+
+out-cube18.txt      : 76 / 76 = 100.00% slot[1] alternatives found, 722,821,117,952 total solutions
+
+Grand total: 627 / 627 = 100.00% slot[1] alternatives found, 8,427,815,464,960 solutions
