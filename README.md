@@ -191,8 +191,7 @@ Each pos[1] + pos[2] cube choice gives rise to a certain number of variants to c
 |16 |`{7, 4}`|42|out-cube16.txt|743,394,725,888|
 |17 |`{7, 9}`|76|out-cube17.txt|728,578,428,928|
 |18 |`{4, 6}`|76|out-cube18.txt|722,821,117,952|
-
-Grand total: 8,427,815,464,960 solutions
+|Grand total| | | |8,427,815,464,960|
 
 Due to 6/9 ambiguity, cubes #12 and #13 are equivalent, as are cubes #14 and #17.
 
