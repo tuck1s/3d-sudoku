@@ -163,38 +163,15 @@ This shows we haven't broken the C++ version.
 
 ## Estimating run-time
 
-A [spreadsheet](estimating/combinations%20of%20first%20layer.xlsx) was used to estimate the expected total run-time. On a 6th-gen Intel i7 x64 machine running all 11 processes simultaneously, just one variant of pos[2] took around 23 hours:
+The C++ solver finds ~5.5 million solutions per second. Run-time was optimized as follows:
 
-```
-out-cube8.txt:-- with - 7 - 3 - 5 	121891.048    65,473,163,264
-out-cube9.txt:-- with - 3 - 5 - 7 	80736.92	    38,955,118,592
-out-cube10.txt:-- with - 3 - 5 - 7	72396.94	    32,622,742,528
-out-cube11.txt:-- with - 7 - 3 - 5	64844.251	    29,704,595,456
-out-cube12.txt:-- with - 7 - 3 - 5	41221.292	    17,103,035,136
-out-cube12.txt:-- with - 3 - 5 - 7	83229.521	    34,123,643,648
-out-cube12.txt:-- with - 4 - 2 - 2	122172.331    46,714,152,192
-out-cube13.txt:-- with - 3 - 5 - 7	38352	        16,270,033,408
-out-cube13.txt:-- with - 5 - 7 - 3	84768.097	    36,207,573,504
-out-cube13.txt:-- with - 4 - 2 - 2	121017.138    48,175,673,600
-out-cube14.txt:-- with - 3 - 5 - 7	43167.36	    17,750,680,064
-out-cube14.txt:-- with - 5 - 7 - 3	83740.348	    34,752,132,096
-out-cube14.txt:-- with - 4 - 2 - 2	121892.865    46,947,904,512
-                                                  ==============
-                                                 464,800,448,000
-```
-
-This is ~5.5 million solutions per second.
-
-Using the Python solver to return early (not going to full depth) shows that for each pos[1], pos[2] has between 28 and 76 valid variations, suggesting ~ 3 months runtime on this machine.
-
-A faster approach:
 * match the number of processes to the number of cores on a host (not overloading it)
 * minimize context switching - pin the processes to a core - see [do_some.sh](./do_some.sh)
 * run on more hosts
 
 This brings the expected runtime down to ~30 days.
 
-## Results (so far)
+## Results
 
 Starting corner pos[0] = `1 3 1`.
 
